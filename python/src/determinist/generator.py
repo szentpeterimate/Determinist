@@ -29,9 +29,9 @@ class Generator:
                 if (i + 1) % self.spec_freq == 0:
                     chars_added += self.spec_chars[i % len(self.spec_chars)]
         elif self.spec_mode == "replace":
-            for i, char in enumerate(stripped):
-                if char in self.char_map:
-                    chars_added += self.char_map[char]
+            for _, char in enumerate(stripped):
+                if char.lower() in self.char_map:
+                    chars_added += self.char_map[char.lower()]
                 else:
                     chars_added += char
 
