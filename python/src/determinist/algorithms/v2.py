@@ -6,7 +6,7 @@ from io import BytesIO
 
 def generate(master_pass: str, site_name: str, pass_length: int, spec_mode: Literal["replace", "insert"], char_map: dict[str, str], spec_chars: list, spec_freq: int, char_types: list) -> str:
 
-    salt = site_name + str(pass_length) + spec_mode + str(char_map) + str(spec_chars) + str(spec_freq) + str(char_types)
+    salt = master_pass + site_name + str(pass_length) + spec_mode + str(char_map) + str(spec_chars) + str(spec_freq) + str(char_types)
 
     random = Random(salt)
 
@@ -46,4 +46,9 @@ def generate(master_pass: str, site_name: str, pass_length: int, spec_mode: Lite
         elif byte < limit:
             password += charset_list[byte % len(charset_list)]
 
-    return password
+    password_to_shuffle = list(password)
+    random.shuffle(password_to_shuffle)
+
+    final = "".join(password_to_shuffle)
+
+    return final
