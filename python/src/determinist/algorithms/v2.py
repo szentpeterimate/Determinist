@@ -2,6 +2,7 @@ from argon2.low_level import Type, hash_secret
 from typing import Literal
 from string import punctuation, ascii_lowercase, ascii_uppercase, digits
 from random import Random
+from io import BytesIO
 
 def generate(master_pass: str, site_name: str, pass_length: int, spec_mode: Literal["replace", "insert"], char_map: dict[str, str], spec_chars: list, spec_freq: int, char_types: list) -> str:
 
@@ -17,16 +18,32 @@ def generate(master_pass: str, site_name: str, pass_length: int, spec_mode: Lite
             charset += ascii_uppercase
         elif i == "digits":
             charset += digits
+        elif i == "special":
+            charset += punctuation
+
+    charset_list = list(charset)
+
+    random.shuffle(spec_chars)
+    random.shuffle(charset_list)
 
     hashed_bytes = hash_secret(secret=master_pass.encode('utf-8'),
                                 salt=salt.encode('utf-8'),
                                 time_cost=2,
                                 memory_cost=65536,
                                 parallelism=4,
-                                hash_len=32,
+                                hash_len=32*pass_length,
                                 type=Type.ID
                             )
+    stream = BytesIO(hashed_bytes)
 
-    random.shuffle(spec_chars)
+    password = ""
 
-    return ""
+    limit = 256 - (256 % len(charset_list))
+    for i, _ in enumerate(hashed_bytes):
+        byte = stream.getvalue()[i]
+        if i == pass_length:
+            break
+        elif byte < limit:
+            password += charset_list[byte % len(charset_list)]
+
+    return password
