@@ -10,11 +10,12 @@ class Generator:
         self.pass_length = pass_length
         self.spec_mode: Literal["replace", "insert"] = spec_mode
         self.spec_freq = spec_freq
+        self.char_types = char_types
 
     def generate_password(self, master_pass: str, site_name: str) -> str:
         if self.version == 1:
             return v1.generate(master_pass=master_pass, site_name=site_name, pass_length=self.pass_length, spec_mode=self.spec_mode, spec_chars=self.spec_chars, char_map=self.char_map, spec_freq=self.spec_freq)
-        if self.version == 1:
-            return v2.generate(master_pass=master_pass, site_name=site_name, pass_length=self.pass_length, spec_mode=self.spec_mode, spec_chars=self.spec_chars, char_map=self.char_map, spec_freq=self.spec_freq, char_types=[])
+        if self.version == 2:
+            return v2.generate(master_pass=master_pass, site_name=site_name, pass_length=self.pass_length, char_map=self.char_map, char_types=self.char_types)
         else:
             raise ValueError(f"Unsupported algorithm version: {self.version}")

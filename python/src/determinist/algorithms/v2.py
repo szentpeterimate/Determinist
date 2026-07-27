@@ -4,9 +4,9 @@ from string import punctuation, ascii_lowercase, ascii_uppercase, digits
 from random import Random
 from io import BytesIO
 
-def generate(master_pass: str, site_name: str, pass_length: int, spec_mode: Literal["replace", "insert"], char_map: dict[str, str], spec_chars: list, spec_freq: int, char_types: list) -> str:
+def generate(master_pass: str, site_name: str, pass_length: int, char_map: dict[str, str], char_types: list) -> str:
 
-    salt = master_pass + site_name + str(pass_length) + spec_mode + str(char_map) + str(spec_chars) + str(spec_freq) + str(char_types)
+    salt = master_pass + site_name + str(pass_length) + str(char_map) + str(char_types)
 
     random = Random(salt)
 
@@ -23,7 +23,6 @@ def generate(master_pass: str, site_name: str, pass_length: int, spec_mode: Lite
 
     charset_list = list(charset)
 
-    random.shuffle(spec_chars)
     random.shuffle(charset_list)
 
     hashed_bytes = hash_secret(secret=master_pass.encode('utf-8'),
@@ -38,6 +37,7 @@ def generate(master_pass: str, site_name: str, pass_length: int, spec_mode: Lite
 
     password = ""
 
+    print(256 % len(charset_list))
     limit = 256 - (256 % len(charset_list))
     for i, _ in enumerate(hashed_bytes):
         byte = stream.getvalue()[i]
