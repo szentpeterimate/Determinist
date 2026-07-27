@@ -1,6 +1,6 @@
 import unittest
 
-from src.determinist import Generator
+from determinist import Generator
 from unittest import TestCase
 
 class TestGenV1(TestCase):
