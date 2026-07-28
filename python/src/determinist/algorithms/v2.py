@@ -37,7 +37,6 @@ def generate(master_pass: str, site_name: str, pass_length: int, char_map: dict[
 
     password = ""
 
-    print(256 % len(charset_list))
     limit = 256 - (256 % len(charset_list))
     for i, _ in enumerate(hashed_bytes):
         byte = stream.getvalue()[i]
