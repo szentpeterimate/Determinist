@@ -3,30 +3,26 @@ import unittest
 from determinist import Generator
 from unittest import TestCase
 
+gen = Generator()
+
 class TestGenV2(TestCase):
     def test_deterministic_output(self):
-        gen = Generator(version=2)
-        self.assertEqual(gen.generate_password("Very-Strong-Passphrase", "github.com"), "8)<wCp:^")
+        self.assertEqual(gen.generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com"), "iq{?(#<j")
 
     def test_site_changes_output(self):
-        gen = Generator(version=2)
-        self.assertEqual(gen.generate_password("Very-Strong-Passphrase", "reddit.com"), "FCqfNj[!")
+        self.assertEqual(gen.generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="reddit.com"), "GyQl}2TJ")
 
     def test_master_changes_output(self):
-        gen = Generator(version=2)
-        self.assertEqual(gen.generate_password("Another-Very-Strong-Passphrase", "github.com"), "m2%VYq'Q")
+        self.assertEqual(gen.generate_password(version=2, master_pass="Another-Very-Strong-Passphrase", site_name="github.com"), "FPk=;vdR")
 
     def test_length(self):
-        gen = Generator(version=2, pass_length=12)
-        self.assertEqual(len(gen.generate_password("Very-Strong-Passphrase", "github.com")), 12)
+        self.assertEqual(len(gen.generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=12)), 12)
 
-    def test_replace(self):
-        gen = Generator(version=2, spec_mode="replace", char_map={'g': '{', 'q': '.', 'r': '='})
-        self.assertEqual(gen.generate_password("Very-Strong-Passphrase", "github.com"), "(`:eF|TJ")
+    def test_length_diff(self):
+        self.assertNotEqual(gen.generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=16), gen.generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=12))
 
-    def test_frequency(self):
-            gen = Generator(version=2, spec_freq=2, pass_length=16)
-            self.assertEqual(gen.generate_password("Very-Strong-Passphrase", "github.com"), "6tG`*{Xk-%C{{.;&")
+    def test_charset(self):
+            self.assertEqual(gen.generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=16, char_types=["digits", "lowercase"]), "naedvteasrje265h")
         
 if __name__ == "__main__":
     unittest.main()
