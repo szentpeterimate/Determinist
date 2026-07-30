@@ -49,3 +49,27 @@ def generate_password_cli(master_pass: Annotated[str, typer.Argument()],
     success_table.add_row(f"Password: [bold cyan]{password}[/]")
 
     print(success_table)
+
+@app.command(name="prompt")
+def generate_password_prompt(master_pass: Annotated[str, typer.Argument()], 
+                      site_name: Annotated[str, typer.Argument()], 
+                      char_map: Annotated[str, typer.Option("--map", "-M", prompt="Character map (dict, v1)")] = "{}", 
+                      spec_chars: Annotated[str, typer.Option("--special", "-s", prompt="Special characters (v1)")] = punctuation, 
+                      version: Annotated[int, typer.Option("--version", "-v", min=1, max=2, prompt="version (1/2)")] = 2, 
+                      pass_length: Annotated[int, typer.Option("--length", "-l", min=6, max=32, prompt="Password length (6-32)")] = 8, 
+                      spec_mode: Annotated[Literal["replace", "insert"], typer.Option("--mode", "-m", prompt="Special character mode (v1)")] = "insert",
+                      spec_freq: Annotated[int, typer.Option("--frequency", "-f", prompt="Special character frequency (v1)")] = 4, 
+                      char_types: Annotated[str, typer.Option("--chars", "-c", prompt="Character types (v2)")] = "special,lowercase,uppercase,digits"
+                     ):
+
+    char_map_dict = json.loads(char_map)
+    spec_chars_list = list(spec_chars)
+    char_types_list = char_types.split(',')
+
+    password = generate_password(master_pass=master_pass, site_name=site_name, char_map=char_map_dict, char_types=char_types_list, pass_length=pass_length, version=version, spec_mode=spec_mode, spec_chars=spec_chars_list, spec_freq=spec_freq)
+
+    success_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
+    success_table.add_column("\nPassword Generation Successful!", justify="center")
+    success_table.add_row(f"Password: [bold cyan]{password}[/]")
+
+    print(success_table)
