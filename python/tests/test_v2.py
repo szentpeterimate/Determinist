@@ -19,7 +19,7 @@ class TestGenV2(TestCase):
         self.assertNotEqual(generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=16), generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=12))
 
     def test_charset(self):
-        self.assertEqual(generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=16, char_types="digits,lowercase"), "ikii50pfdlweu1ru")
+        self.assertEqual(generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=16, char_types=["digits","lowercase"]), "ikii50pfdlweu1ru")
         
 if __name__ == "__main__":
     unittest.main()

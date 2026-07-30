@@ -7,8 +7,26 @@ from rich import print
 
 app = typer.Typer()
 
-@app.command()
-def generate_password(master_pass: Annotated[str, typer.Argument()], 
+def generate_password(master_pass: str, 
+                      site_name: str, 
+                      char_map: dict[str, str] = {}, 
+                      spec_chars: list = list(punctuation), 
+                      version: int = 2, 
+                      pass_length: int = 8, 
+                      spec_mode: Literal["replace", "insert"] = "insert",
+                      spec_freq: int = 4, 
+                      char_types: list = ["special","lowercase","uppercase","digits"]
+                     ) -> str:
+    
+    if version == 1:
+        return v1.generate(master_pass=master_pass, site_name=site_name, pass_length=pass_length, spec_mode=spec_mode, spec_chars=spec_chars, char_map=char_map, spec_freq=spec_freq)
+    elif version == 2:
+        return v2.generate(master_pass=master_pass, site_name=site_name, pass_length=pass_length, char_map=char_map, char_types=char_types)
+    else:
+        raise ValueError(f"Unsupported algorithm version: {version}")
+
+@app.command(name="generate")
+def generate_password_cli(master_pass: Annotated[str, typer.Argument()], 
                       site_name: Annotated[str, typer.Argument()], 
                       char_map: Annotated[str, typer.Option("--map", "-M")] = "{}", 
                       spec_chars: Annotated[str, typer.Option("--special", "-s")] = punctuation, 
@@ -20,14 +38,10 @@ def generate_password(master_pass: Annotated[str, typer.Argument()],
                      ):
 
     char_map_dict = json.loads(char_map)
-
     spec_chars_list = list(spec_chars)
-
     char_types_list = char_types.split(',')
     
-    if version == 1:
-        return v1.generate(master_pass=master_pass, site_name=site_name, pass_length=pass_length, spec_mode=spec_mode, spec_chars=spec_chars_list, char_map=char_map_dict, spec_freq=spec_freq)
-    elif version == 2:
-        return v2.generate(master_pass=master_pass, site_name=site_name, pass_length=pass_length, char_map=char_map_dict, char_types=char_types_list)
-    else:
-        raise ValueError(f"Unsupported algorithm version: {version}")
+    password = generate_password(master_pass=master_pass, site_name=site_name, char_map=char_map_dict, char_types=char_types_list, pass_length=pass_length, version=version, spec_mode=spec_mode, spec_chars=spec_chars_list, spec_freq=spec_freq)
+
+    print(password)
+    
