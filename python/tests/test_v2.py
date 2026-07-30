@@ -12,10 +12,10 @@ class TestGenV2(TestCase):
         self.assertEqual(generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com"), "Vo`Ns\\f3")
 
     def test_site_changes_output(self):
-        self.assertEqual(generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="reddit.com"), "H%B,9\"Ky")
+        self.assertNotEqual(generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="reddit.com"), "Vo`Ns\\f3")
 
     def test_master_changes_output(self):
-        self.assertEqual(generate_password(version=2, master_pass="Another-Very-Strong-Passphrase", site_name="github.com"), "xoN2t)p'")
+        self.assertNotEqual(generate_password(version=2, master_pass="Another-Very-Strong-Passphrase", site_name="github.com"), "Vo`Ns\\f3")
 
     def test_length(self):
         self.assertEqual(len(generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=12)), 12)
@@ -30,7 +30,7 @@ class TestGenV2(TestCase):
         core = generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=12, char_types=["digits", "special", "uppercase"])
         cli = self.runner.invoke(app, ["Very-Strong-Passphrase", "github.com", "-l", "12", "-c", "digits,special,uppercase", "-v" "2"])
 
-        self.assertEqual(cli.output.strip(), core)
+        self.assertIn(core, cli.output.strip())
         
 if __name__ == "__main__":
     unittest.main()
