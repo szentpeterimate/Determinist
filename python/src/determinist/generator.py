@@ -3,7 +3,8 @@ import json
 from typing import Literal, Annotated
 from string import punctuation
 from .algorithms import v1, v2
-from rich import print
+from rich import print, box
+from rich.table import Table
 
 app = typer.Typer()
 
@@ -40,8 +41,11 @@ def generate_password_cli(master_pass: Annotated[str, typer.Argument()],
     char_map_dict = json.loads(char_map)
     spec_chars_list = list(spec_chars)
     char_types_list = char_types.split(',')
-    
+
     password = generate_password(master_pass=master_pass, site_name=site_name, char_map=char_map_dict, char_types=char_types_list, pass_length=pass_length, version=version, spec_mode=spec_mode, spec_chars=spec_chars_list, spec_freq=spec_freq)
 
-    print(password)
-    
+    success_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
+    success_table.add_column("Password Generation Successful!", justify="center")
+    success_table.add_row(f"Password: [bold cyan]{password}[/]")
+
+    print(success_table)
