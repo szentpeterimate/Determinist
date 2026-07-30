@@ -1,9 +1,20 @@
 [project]
 name = "determinist"
 version = "0.1.0"
-description = "Add your description here"
+description = "A deterministic password generator"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "argon2-cffi>=25.1.0",
+    "typer>=0.27.0",
 ]
+
+[project.scripts]
+determinist = "determinist.generator:app"
+
+[build-system]
+requires = ["uv_build>=0.8.14,<0.9.0"]
+buuild-backend = "uv_build"
+
+[tool.uv.extra-build-dependencies]
+determinist = ["setuptools"]

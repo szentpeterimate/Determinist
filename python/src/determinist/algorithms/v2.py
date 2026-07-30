@@ -4,10 +4,9 @@ from random import Random
 from io import BytesIO
 
 def generate(master_pass: str, site_name: str, pass_length: int, char_map: str, char_types: list) -> str:
-
     types_set = set(char_types)
-
     charset = ""
+
     if "special" in types_set:
         charset += punctuation
     if "lowercase" in types_set:
@@ -16,15 +15,11 @@ def generate(master_pass: str, site_name: str, pass_length: int, char_map: str, 
         charset += ascii_uppercase
     if "digits" in types_set:
         charset += digits
-    
+
     charset_list = list(charset)
-
     salt = master_pass + site_name + str(pass_length) + str(char_map) + charset
+
     random = Random(salt)
-
-    print(f"DEBUG SALT: {repr(salt)}")
-    print(f"DEBUG CHARSET: {repr(charset)}")
-
     random.shuffle(charset_list)
 
     hashed_bytes = hash_secret(secret=master_pass.encode('utf-8'),
@@ -36,7 +31,6 @@ def generate(master_pass: str, site_name: str, pass_length: int, char_map: str, 
                                 type=Type.ID
                             )
     stream = BytesIO(hashed_bytes)
-
     password = ""
 
     limit = 256 - (256 % len(charset_list))
@@ -49,7 +43,6 @@ def generate(master_pass: str, site_name: str, pass_length: int, char_map: str, 
 
     password_to_shuffle = list(password)
     random.shuffle(password_to_shuffle)
-
     final = "".join(password_to_shuffle)
 
     return final
