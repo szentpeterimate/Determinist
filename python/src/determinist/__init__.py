@@ -1,1 +1,1 @@
-from .generator import generate_password
+from .generator import generate_password, app
