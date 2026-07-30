@@ -16,7 +16,7 @@ class TestGenV1(TestCase):
         self.assertEqual(len(generate_password("Very-Strong-Passphrase", "github.com", version=1, pass_length=12)), 12)
 
     def test_replace(self):
-        self.assertEqual(generate_password("Very-Strong-Passphrase", "github.com", version=1, spec_mode="replace", char_map='{"g": "{", "q": ".", "r": "="}'), "V{Z=5U..")
+        self.assertEqual(generate_password("Very-Strong-Passphrase", "github.com", version=1, spec_mode="replace", char_map={"g": "{", "q": ".", "r": "="}), "V{Z=5U..")
 
     def test_frequency(self):
         self.assertEqual(generate_password("Very-Strong-Passphrase", "github.com", version=1, spec_freq=2, pass_length=16), "wZ\"LV$gZ&R5(UQ*Q")
