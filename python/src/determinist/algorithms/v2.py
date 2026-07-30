@@ -1,27 +1,29 @@
 from argon2.low_level import Type, hash_secret
-from typing import Literal
 from string import punctuation, ascii_lowercase, ascii_uppercase, digits
 from random import Random
 from io import BytesIO
 
-def generate(master_pass: str, site_name: str, pass_length: int, char_map: dict[str, str], char_types: list) -> str:
+def generate(master_pass: str, site_name: str, pass_length: int, char_map: str, char_types: list) -> str:
 
-    salt = master_pass + site_name + str(pass_length) + str(char_map) + str(char_types)
-
-    random = Random(salt)
+    types_set = set(char_types)
 
     charset = ""
-    for i in char_types:
-        if i == "lowercase":
-            charset += ascii_lowercase
-        elif i == "uppercase":
-            charset += ascii_uppercase
-        elif i == "digits":
-            charset += digits
-        elif i == "special":
-            charset += punctuation
-
+    if "special" in types_set:
+        charset += punctuation
+    if "lowercase" in types_set:
+        charset += ascii_lowercase
+    if "uppercase" in types_set:
+        charset += ascii_uppercase
+    if "digits" in types_set:
+        charset += digits
+    
     charset_list = list(charset)
+
+    salt = master_pass + site_name + str(pass_length) + str(char_map) + charset
+    random = Random(salt)
+
+    print(f"DEBUG SALT: {repr(salt)}")
+    print(f"DEBUG CHARSET: {repr(charset)}")
 
     random.shuffle(charset_list)
 
