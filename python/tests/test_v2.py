@@ -28,7 +28,7 @@ class TestGenV2(TestCase):
 
     def test_cli_core_match(self):
         core = generate_password(version=2, master_pass="Very-Strong-Passphrase", site_name="github.com", pass_length=12, char_types=["digits", "special", "uppercase"])
-        cli = self.runner.invoke(app, ["Very-Strong-Passphrase", "github.com", "-l", "12", "-c", "digits,special,uppercase", "-v" "2"])
+        cli = self.runner.invoke(app, ["generate", "Very-Strong-Passphrase", "github.com", "-l", "12", "-c", "digits,special,uppercase", "-v" "2"])
 
         self.assertIn(core, cli.output.strip())
         
