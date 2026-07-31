@@ -1,3 +1,1 @@
-from .generator import Generator
-
-print("Password generator initialized")
+from .generator import generate_password, app

@@ -1,40 +1,75 @@
-import argon2
-from argon2.low_level import Type, hash_secret
-from typing import Literal, final
+import typer
+import json
+from typing import Literal, Annotated
 from string import punctuation
+from .algorithms import v1, v2
+from rich import print, box
+from rich.table import Table
 
-class Generator:
-    def __init__(self, char_map: dict[str, str] = {'a': '$', 'h': '(', 'z': '&'}, spec_chars: list = list(punctuation), spec_mode: Literal["replace", "insert"] = "insert", pass_length: int = 8, spec_freq: int = 4) -> None:
-        self.char_map = char_map
-        self.spec_chars = spec_chars
-        self.pass_length = pass_length
-        self.spec_mode = spec_mode
-        self.spec_freq = spec_freq
+app = typer.Typer()
 
-    def generate_password(self, master_pass: str, site_name: str) -> str:
-        hashed_str = hash_secret(secret=master_pass.encode('utf-8'),
-                                 salt=site_name.encode('utf-8'),
-                                 time_cost=2,
-                                 memory_cost=65536,
-                                 parallelism=4,
-                                 hash_len=32,
-                                 type=Type.ID
-                                ).decode('utf-8')
-        stripped = hashed_str.split('$')[-1]
+def generate_password(master_pass: str, 
+                      site_name: str, 
+                      char_map: dict[str, str] = {}, 
+                      spec_chars: list = list(punctuation), 
+                      version: int = 2, 
+                      pass_length: int = 8, 
+                      spec_mode: Literal["replace", "insert"] = "insert",
+                      spec_freq: int = 4, 
+                      char_types: list = ["special","lowercase","uppercase","digits"]
+                     ) -> str:
+    
+    if version == 1:
+        return v1.generate(master_pass=master_pass, site_name=site_name, pass_length=pass_length, spec_mode=spec_mode, spec_chars=spec_chars, char_map=char_map, spec_freq=spec_freq)
+    elif version == 2:
+        return v2.generate(master_pass=master_pass, site_name=site_name, pass_length=pass_length, char_map=char_map, char_types=char_types)
+    else:
+        raise ValueError(f"Unsupported algorithm version: {version}")
 
-        chars_added = ""
-        if self.spec_mode == "insert":
-            for i, char in enumerate(stripped):
-                chars_added += char
-                if (i + 1) % self.spec_freq == 0:
-                    chars_added += self.spec_chars[i % len(self.spec_chars)]
-        elif self.spec_mode == "replace":
-            for _, char in enumerate(stripped):
-                if char.lower() in self.char_map:
-                    chars_added += self.char_map[char.lower()]
-                else:
-                    chars_added += char
+@app.command(name="generate")
+def generate_password_cli(master_pass: Annotated[str, typer.Argument()], 
+                      site_name: Annotated[str, typer.Argument()], 
+                      char_map: Annotated[str, typer.Option("--map", "-M")] = "{}", 
+                      spec_chars: Annotated[str, typer.Option("--special", "-s")] = punctuation, 
+                      version: Annotated[int, typer.Option("--version", "-v", min=1, max=2)] = 2, 
+                      pass_length: Annotated[int, typer.Option("--length", "-l", min=6, max=32)] = 8, 
+                      spec_mode: Annotated[Literal["replace", "insert"], typer.Option("--mode", "-m")] = "insert",
+                      spec_freq: Annotated[int, typer.Option("--frequency", "-f")] = 4, 
+                      char_types: Annotated[str, typer.Option("--chars", "-c")] = "special,lowercase,uppercase,digits"
+                     ):
 
-        final_password = chars_added[-self.pass_length:]
+    char_map_dict = json.loads(char_map)
+    spec_chars_list = list(spec_chars)
+    char_types_list = char_types.split(',')
 
-        return final_password
+    password = generate_password(master_pass=master_pass, site_name=site_name, char_map=char_map_dict, char_types=char_types_list, pass_length=pass_length, version=version, spec_mode=spec_mode, spec_chars=spec_chars_list, spec_freq=spec_freq)
+
+    success_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
+    success_table.add_column("Password Generation Successful!", justify="center")
+    success_table.add_row(f"Password: [bold cyan]{password}[/]")
+
+    print(success_table)
+
+@app.command(name="prompt")
+def generate_password_prompt(master_pass: Annotated[str, typer.Argument()], 
+                      site_name: Annotated[str, typer.Argument()], 
+                      char_map: Annotated[str, typer.Option("--map", "-M", prompt="Character map (dict, v1)")] = "{}", 
+                      spec_chars: Annotated[str, typer.Option("--special", "-s", prompt="Special characters (v1)")] = punctuation, 
+                      version: Annotated[int, typer.Option("--version", "-v", min=1, max=2, prompt="version (1/2)")] = 2, 
+                      pass_length: Annotated[int, typer.Option("--length", "-l", min=6, max=32, prompt="Password length (6-32)")] = 8, 
+                      spec_mode: Annotated[Literal["replace", "insert"], typer.Option("--mode", "-m", prompt="Special character mode (v1)")] = "insert",
+                      spec_freq: Annotated[int, typer.Option("--frequency", "-f", prompt="Special character frequency (v1)")] = 4, 
+                      char_types: Annotated[str, typer.Option("--chars", "-c", prompt="Character types (v2)")] = "special,lowercase,uppercase,digits"
+                     ):
+
+    char_map_dict = json.loads(char_map)
+    spec_chars_list = list(spec_chars)
+    char_types_list = char_types.split(',')
+
+    password = generate_password(master_pass=master_pass, site_name=site_name, char_map=char_map_dict, char_types=char_types_list, pass_length=pass_length, version=version, spec_mode=spec_mode, spec_chars=spec_chars_list, spec_freq=spec_freq)
+
+    success_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
+    success_table.add_column("\nPassword Generation Successful!", justify="center")
+    success_table.add_row(f"Password: [bold cyan]{password}[/]")
+
+    print(success_table)
