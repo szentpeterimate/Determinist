@@ -42,4 +42,4 @@ These can be omitted (left default) if you're using one version over the other.
 <img src="/media/demo_prompt.gif"></img>
 
 ## Disclaimer
-Determinist is purely a **password generator**. Read more [here](/DISCLAIMER)
+Determinist is purely a **password generator**. Read more [here](/DISCLAIMER.md)
