@@ -11,12 +11,10 @@ A deterministic password generator so you never forget your passwords.
 ## Installation
 ### pipx (Recommended):
 1. If you don't have pipx installed yet, follow the official [installation guide](https://pipx.pypa.io/stable/how-to/install-pipx.html).
-2. Download the latest wheel file from the [Releases](https://github.com/szentpeterimate/determinist/releases/latest) page
-3. Install Determinist with `pipx install determinist.whl` (Make sure to enter the filename correctly!)
+2. Install Determinist with `pipx install determinist` (Make sure to enter the filename correctly!)
 > Important! Determinist was built with pipx version **1.16.5**. Make sure you have the latest version installed.
 ### pip:
-1. Download the latest wheel file from the [Releases](https://github.com/szentpeterimate/determinist/releases/latest) page
-2. Install Determinist with `pip install determinist.whl` (Make sure to enter the filename correctly!)
+- Install Determinist with `pip install determinist` (Make sure to enter the filename correctly!)
 > This tool is meant to be used from the terminal. Only install using pip if you know what you're doing!
 
 ## How to use
