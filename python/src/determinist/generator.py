@@ -5,8 +5,11 @@ from string import punctuation
 from .algorithms import v1, v2
 from rich import print, box
 from rich.table import Table
+from .config_handler import ConfigHandler
+from pathlib import Path
 
 app = typer.Typer()
+ch = ConfigHandler()
 
 def generate_password(master_pass: str, 
                       site_name: str, 
@@ -73,3 +76,11 @@ def generate_password_prompt(master_pass: Annotated[str, typer.Argument()],
     success_table.add_row(f"Password: [bold cyan]{password}[/]")
 
     print(success_table)
+
+@app.command(name="save")
+def save_preset(path: Annotated[Path, typer.Argument(dir_okay=False, file_okay=True, exists=True)]):
+    ch.save_config(path)
+
+@app.command(name="delete")
+def delete_preset(file_name: Annotated[str, typer.Argument()], force: Annotated[bool, typer.Option("--force")] = False):
+    ch.delete_config(file_name, force)
