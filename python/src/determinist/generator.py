@@ -55,14 +55,14 @@ def generate_password_cli(master_pass: Annotated[str, typer.Argument()],
 
 @app.command(name="prompt")
 def generate_password_prompt(master_pass: Annotated[str, typer.Argument()], 
-                      site_name: Annotated[str, typer.Argument()], 
-                      char_map: Annotated[str, typer.Option("--map", "-M", prompt="Character map (dict, v1)")] = "{}", 
-                      spec_chars: Annotated[str, typer.Option("--special", "-s", prompt="Special characters (v1)")] = punctuation, 
-                      version: Annotated[int, typer.Option("--version", "-v", min=1, max=2, prompt="version (1/2)")] = 2, 
-                      pass_length: Annotated[int, typer.Option("--length", "-l", min=6, max=32, prompt="Password length (6-32)")] = 8, 
-                      spec_mode: Annotated[Literal["replace", "insert"], typer.Option("--mode", "-m", prompt="Special character mode (v1)")] = "insert",
-                      spec_freq: Annotated[int, typer.Option("--frequency", "-f", prompt="Special character frequency (v1)")] = 4, 
-                      char_types: Annotated[str, typer.Option("--chars", "-c", prompt="Character types (v2)")] = "special,lowercase,uppercase,digits"
+                      site_name: Annotated[str, typer.Argument()],
+                      version: Annotated[int, typer.Option(min=1, max=2, prompt="version (1/2)")] = 2,
+                      char_map: Annotated[str, typer.Option(prompt="Character map (dict, v1)")] = "{}", 
+                      spec_chars: Annotated[str, typer.Option(prompt="Special characters (v1)")] = punctuation, 
+                      pass_length: Annotated[int, typer.Option(min=6, max=32, prompt="Password length (6-32)")] = 8, 
+                      spec_mode: Annotated[Literal["replace", "insert"], typer.Option(prompt="Special character mode (v1)")] = "insert",
+                      spec_freq: Annotated[int, typer.Option(prompt="Special character frequency (v1)")] = 4, 
+                      char_types: Annotated[str, typer.Option(prompt="Character types (v2)")] = "special,lowercase,uppercase,digits"
                      ):
 
     char_map_dict = json.loads(char_map)
