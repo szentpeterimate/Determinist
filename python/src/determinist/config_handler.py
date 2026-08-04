@@ -68,7 +68,12 @@ class ConfigHandler:
             file.copy(target_path)
 
     def load_config(self, file_name: str) -> dict:
-        path = self.config_path / file_name
+        path = self.presets_path / file_name
+        
+        if path.suffix == "":
+            path = self.presets_path / path.with_suffix(".toml")
+        elif path.suffix == ".toml":
+            pass
 
         with open(path, 'rb') as f:
             return tomllib.load(f)
