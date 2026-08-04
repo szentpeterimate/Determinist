@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Literal
 from platformdirs import user_config_dir
 import tomllib
 import inspect
@@ -38,6 +39,28 @@ class ConfigHandler:
             """
             default_config = inspect.cleandoc(default_config)
             self.config_file.write_text(default_config, encoding="utf-8")
+
+    def get_files(self, mode: Literal["path", "name", "description"]):
+        if mode == "path":
+            paths = []
+            for file in self.presets_path.iterdir():
+                if file.is_file():
+                    paths.append(file)
+            return paths
+        else:
+            details = []
+            content = {}
+
+            if mode == "name":
+                for file in self.presets_path.iterdir():
+                    content = self.load_config(file.name)
+                    details.append((content["preset"]["name"]))
+            else:
+                for file in self.presets_path.iterdir():
+                    content = self.load_config(file.name)
+                    details.append((content["preset"]["description"]))
+
+            return details
 
     def save_config(self, file: Path) -> None:
             target_path = self.presets_path / file.name
