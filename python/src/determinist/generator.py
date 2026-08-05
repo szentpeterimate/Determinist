@@ -142,3 +142,11 @@ def save_preset(path: Annotated[Path, typer.Argument(dir_okay=False, file_okay=T
 @presets_app.command(name="delete")
 def delete_preset(file_name: Annotated[str, typer.Argument()], force: Annotated[bool, typer.Option("--force")] = False):
     ch.delete_config(file_name, force)
+
+@presets_app.command(name="default")
+def set_default_preset(filename: Annotated[str, typer.Argument()]):
+    try:
+        ch.set_default(filename)
+        print(f"Successfully set {filename} as default")
+    except Exception as e:
+        print(f"Error: {e}")

@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Literal
 from platformdirs import user_config_dir
 import tomllib
+import tomli_w
 import inspect
 
 class DefaultConfigError(Exception):
@@ -107,3 +108,39 @@ class ConfigHandler:
             else:
                 target_path.unlink(missing_ok=True)
                 print(f"Preset {file_name} deleted!")
+
+    def get_default_path(self) -> Path | None:
+        default_name = self.get_files("default")
+        default_name = default_name[0] if default_name else None
+
+        return next(
+            (path for name, path in zip(self.get_files("name"), self.get_files("path")) if name == default_name),
+            None
+    )
+
+    def set_default(self, file_name: str):
+        target_path = self.presets_path / file_name
+        current_default = self.get_default_path()
+        assert current_default is not None
+        
+        content = {}
+        if target_path.suffix == "":
+            target_path = self.presets_path / target_path.with_suffix(".toml")
+        elif target_path.suffix == ".toml":
+            pass
+
+        with open(target_path, 'rb') as f:
+            content = tomllib.load(f)
+
+        content["preset"]["is_default"] = True
+
+        with open(target_path, 'wb') as f:
+            tomli_w.dump(content, f)
+
+        with open(current_default, 'rb') as f:
+            content = tomllib.load(f)
+
+        content["preset"]["is_default"] = False
+
+        with open(current_default, 'wb') as f:
+            tomli_w.dump(content, f)
