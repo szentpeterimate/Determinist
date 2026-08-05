@@ -5,6 +5,7 @@ from string import punctuation
 from .algorithms import v1, v2
 from rich import print, box
 from rich.table import Table
+from rich.prompt import Prompt
 from .config_handler import ConfigHandler
 from pathlib import Path
 
@@ -31,19 +32,42 @@ def generate_password(master_pass: str,
 
 @app.command(name="generate")
 def generate_password_cli(master_pass: Annotated[str, typer.Argument()], 
-                      site_name: Annotated[str, typer.Argument()], 
-                      char_map: Annotated[str, typer.Option("--map", "-M")] = "{}", 
-                      spec_chars: Annotated[str, typer.Option("--special", "-s")] = punctuation, 
+                      site_name: Annotated[str, typer.Argument()],
+                      use_preset: Annotated[bool, typer.Option("--preset", "-p")] = False,
                       version: Annotated[int, typer.Option("--version", "-v", min=1, max=2)] = 2, 
                       pass_length: Annotated[int, typer.Option("--length", "-l", min=6, max=32)] = 8, 
+                      char_map: Annotated[str, typer.Option("--map", "-M")] = "{}", 
+                      spec_chars: Annotated[str, typer.Option("--special", "-s")] = punctuation, 
                       spec_mode: Annotated[Literal["replace", "insert"], typer.Option("--mode", "-m")] = "insert",
                       spec_freq: Annotated[int, typer.Option("--frequency", "-f")] = 4, 
                       char_types: Annotated[str, typer.Option("--chars", "-c")] = "special,lowercase,uppercase,digits"
                      ):
+    content = {}
+    if use_preset == True:
+        chosen_file = Prompt.ask("Select a file", choices=ch.get_files("name"), default=ch.get_files("default")[0])
+        content = ch.load_config(chosen_file.lower())
 
-    char_map_dict = json.loads(char_map)
-    spec_chars_list = list(spec_chars)
-    char_types_list = char_types.split(',')
+        version = content["general"]["version"]
+        pass_length = content["general"]["pass_length"]
+
+        spec_mode = content["v1"]["spec_mode"]
+        spec_freq = content["v1"]["spec_freq"]
+        spec_chars = content["v1"]["spec_chars"]
+        char_map = content["v1"]["char_map"]
+
+        char_types = content["v2"]["char_types"]
+    else:
+        pass
+
+    char_map_dict = (
+        char_map if isinstance(char_map, dict) else json.loads(char_map)
+    )
+    spec_chars_list = (
+        spec_chars if isinstance(spec_chars, list) else list(spec_chars)
+    )
+    char_types_list = (
+        char_types if isinstance(char_types, list) else char_types.split(",")
+    )
 
     password = generate_password(master_pass=master_pass, site_name=site_name, char_map=char_map_dict, char_types=char_types_list, pass_length=pass_length, version=version, spec_mode=spec_mode, spec_chars=spec_chars_list, spec_freq=spec_freq)
 
@@ -57,9 +81,9 @@ def generate_password_cli(master_pass: Annotated[str, typer.Argument()],
 def generate_password_prompt(master_pass: Annotated[str, typer.Argument()], 
                       site_name: Annotated[str, typer.Argument()],
                       version: Annotated[int, typer.Option(min=1, max=2, prompt="version (1/2)")] = 2,
+                      pass_length: Annotated[int, typer.Option(min=6, max=32, prompt="Password length (6-32)")] = 8, 
                       char_map: Annotated[str, typer.Option(prompt="Character map (dict, v1)")] = "{}", 
                       spec_chars: Annotated[str, typer.Option(prompt="Special characters (v1)")] = punctuation, 
-                      pass_length: Annotated[int, typer.Option(min=6, max=32, prompt="Password length (6-32)")] = 8, 
                       spec_mode: Annotated[Literal["replace", "insert"], typer.Option(prompt="Special character mode (v1)")] = "insert",
                       spec_freq: Annotated[int, typer.Option(prompt="Special character frequency (v1)")] = 4, 
                       char_types: Annotated[str, typer.Option(prompt="Character types (v2)")] = "special,lowercase,uppercase,digits"
