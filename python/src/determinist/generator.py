@@ -121,7 +121,9 @@ def generate_password_prompt(
 
 @presets_app.callback(invoke_without_command=True)
 def list_presets(ctx: typer.Context):
-    details = {name: {"description": desc, "path": str(path), "is_default": default} for name, desc, path, default in zip_longest(ch.get_files("name"), ch.get_files("description"), ch.get_files("path"), ch.get_files("default"))}
+    default_name = ch.get_files("default")
+    default_name = default_name[0] if default_name else ""
+    details = {name: {"description": desc, "path": str(path), "is_default": (name == default_name)} for name, desc, path in zip_longest(ch.get_files("name"), ch.get_files("description"), ch.get_files("path"), fillvalue=None)}
 
     preset_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
     preset_table.add_column("Preset")
@@ -130,7 +132,7 @@ def list_presets(ctx: typer.Context):
     preset_table.add_column("Default?")
 
     for i, j in details.items():
-        preset_table.add_row(i, j["description"], j["path"], "True" if j["is_default"] == i else "False")
+        preset_table.add_row(i, j["description"], j["path"], str(j["is_default"]))
 
     if ctx.invoked_subcommand == None:
         print(preset_table)
@@ -141,8 +143,10 @@ def save_preset(path: Annotated[Path, typer.Argument(dir_okay=False, file_okay=T
 
 @presets_app.command(name="delete")
 def delete_preset(file_name: Annotated[str, typer.Argument()], force: Annotated[bool, typer.Option("--force")] = False):
-    ch.delete_config(file_name, force)
-
+    try:
+        ch.delete_config(file_name, force)
+    except Exception as e:
+        print(f"Error: {e}")
 @presets_app.command(name="default")
 def set_default_preset(filename: Annotated[str, typer.Argument()]):
     try:
