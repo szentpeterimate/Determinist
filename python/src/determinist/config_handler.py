@@ -14,10 +14,13 @@ class ConfigHandler:
         self.presets_path = self.config_path / "presets"
         self.config_file = self.presets_path / "default.toml"
 
-        self.config_path.mkdir(parents=True, exist_ok=True)
+        self._initial_config()
+
+    def _initial_config(self):
+        is_first_run = not self.config_path.exists()
         self.presets_path.mkdir(parents=True, exist_ok=True)
 
-        if not self.config_file.exists():
+        if is_first_run and not self.config_file.exists():
             default_config = """
             [preset]
             name = "Default"
@@ -36,8 +39,8 @@ class ConfigHandler:
 
             [v2]
             char_types = ["special", "lowercase", "uppercase", "digits"]
-
             """
+
             default_config = inspect.cleandoc(default_config)
             self.config_file.write_text(default_config, encoding="utf-8")
 
