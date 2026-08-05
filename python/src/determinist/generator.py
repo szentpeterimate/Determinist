@@ -8,8 +8,13 @@ from rich.table import Table
 from rich.prompt import Prompt
 from .config_handler import ConfigHandler
 from pathlib import Path
+from itertools import zip_longest
 
 app = typer.Typer()
+
+presets_app = typer.Typer()
+app.add_typer(presets_app, name="presets")
+
 ch = ConfigHandler()
 
 def generate_password(master_pass: str, 
@@ -101,10 +106,26 @@ def generate_password_prompt(master_pass: Annotated[str, typer.Argument()],
 
     print(success_table)
 
-@app.command(name="save")
+@presets_app.callback(invoke_without_command=True)
+def list_presets(ctx: typer.Context):
+    details = {name: {"description": desc, "path": str(path), "is_default": default} for name, desc, path, default in zip_longest(ch.get_files("name"), ch.get_files("description"), ch.get_files("path"), ch.get_files("default"))}
+
+    preset_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
+    preset_table.add_column("Preset")
+    preset_table.add_column("Description")
+    preset_table.add_column("Path")
+    preset_table.add_column("Default?")
+
+    for i, j in details.items():
+        preset_table.add_row(i, j["description"], j["path"], "True" if j["is_default"] == i else "False")
+
+    if ctx.invoked_subcommand == None:
+        print(preset_table)
+
+@presets_app.command(name="save")
 def save_preset(path: Annotated[Path, typer.Argument(dir_okay=False, file_okay=True, exists=True)]):
     ch.save_config(path)
 
-@app.command(name="delete")
+@presets_app.command(name="delete")
 def delete_preset(file_name: Annotated[str, typer.Argument()], force: Annotated[bool, typer.Option("--force")] = False):
     ch.delete_config(file_name, force)
