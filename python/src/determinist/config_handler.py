@@ -40,27 +40,36 @@ class ConfigHandler:
             default_config = inspect.cleandoc(default_config)
             self.config_file.write_text(default_config, encoding="utf-8")
 
-    def get_files(self, mode: Literal["path", "name", "description"]):
-        if mode == "path":
-            paths = []
-            for file in self.presets_path.iterdir():
-                if file.is_file():
-                    paths.append(file)
-            return paths
-        else:
-            details = []
-            content = {}
+    def get_files(self, mode: Literal["path", "name", "description", "default"]):
+        details = []
+        content = {}
 
-            if mode == "name":
+
+        match mode:
+            case "path":
+                paths = []
+                for file in self.presets_path.iterdir():
+                    if file.is_file():
+                        paths.append(file)
+                return paths
+            case "name":                
                 for file in self.presets_path.iterdir():
                     content = self.load_config(file.name)
                     details.append((content["preset"]["name"]))
-            else:
+                return details
+            case "description":
+                for file in self.presets_path.iterdir():
+                        content = self.load_config(file.name)
+                        details.append((content["preset"]["description"]))
+                return details
+            case "default":
                 for file in self.presets_path.iterdir():
                     content = self.load_config(file.name)
-                    details.append((content["preset"]["description"]))
 
-            return details
+                    if content["preset"]["is_default"]:
+                        details.append(content["preset"]["name"])
+                return details
+
 
     def save_config(self, file: Path) -> None:
             target_path = self.presets_path / file.name
