@@ -43,12 +43,5 @@ These can be omitted (left default) if you're using one version over the other.
 #### V2
 - `--chars` / `-c`: The character set used in v2. Separate them by commas **without spaces**
 
-## Examples
-1. Using `generate`:
-<img src="/media/demo_generate.gif"></img>
-
-2. Using `prompt`:
-<img src="/media/demo_prompt.gif"></img>
-
 ## Disclaimer
 Determinist is purely a **password generator**. Read more [here](/DISCLAIMER.md)
