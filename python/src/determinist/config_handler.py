@@ -77,6 +77,13 @@ class ConfigHandler:
 
     def save_config(self, file: Path) -> None:
             target_path = self.presets_path / file.name
+
+            if target_path.suffix == "":
+                target_path = self.presets_path / target_path.with_suffix(".toml")
+            elif target_path.suffix == ".toml":
+                pass
+            else:
+                print("Incorrect file type.")
     
             file.copy(target_path)
 
@@ -87,6 +94,8 @@ class ConfigHandler:
             path = self.presets_path / path.with_suffix(".toml")
         elif path.suffix == ".toml":
             pass
+        else:
+            print("Incorrect file type.")
 
         with open(path, 'rb') as f:
             return tomllib.load(f)
@@ -99,6 +108,8 @@ class ConfigHandler:
                 target_path = self.presets_path / target_path.with_suffix(".toml")
             elif target_path.suffix == ".toml":
                 pass
+            else:
+                print("Incorrect file type.")
 
             with open(target_path, 'rb') as f:
                 content = tomllib.load(f)
@@ -131,6 +142,8 @@ class ConfigHandler:
             target_path = self.presets_path / target_path.with_suffix(".toml")
         elif target_path.suffix == ".toml":
             pass
+        else:
+            print("Incorrect file type.")
 
         with open(target_path, 'rb') as f:
             content = tomllib.load(f)
