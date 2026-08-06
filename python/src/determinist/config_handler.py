@@ -8,6 +8,9 @@ import inspect
 class DefaultConfigError(Exception):
     pass
 
+class InvalidFileTypeError(Exception):
+    pass
+
 class ConfigHandler:
     def __init__(self):
         self.config_path = Path(user_config_dir("determinist", appauthor=False))
@@ -48,31 +51,33 @@ class ConfigHandler:
         details = []
         content = {}
 
-
-        match mode:
-            case "path":
-                paths = []
-                for file in self.presets_path.iterdir():
-                    if file.is_file():
-                        paths.append(file)
-                return paths
-            case "name":                
-                for file in self.presets_path.iterdir():
-                    content = self.load_config(file.name)
-                    details.append((content["preset"]["name"]))
-                return details
-            case "description":
-                for file in self.presets_path.iterdir():
+        if not any(self.config_path.iterdir()):
+            print("No presets found!")
+        else:
+            match mode:
+                case "path":
+                    paths = []
+                    for file in self.presets_path.iterdir():
+                        if file.is_file():
+                            paths.append(file)
+                    return paths
+                case "name":                
+                    for file in self.presets_path.iterdir():
                         content = self.load_config(file.name)
-                        details.append((content["preset"]["description"]))
-                return details
-            case "default":
-                for file in self.presets_path.iterdir():
-                    content = self.load_config(file.name)
+                        details.append((content["preset"]["name"]))
+                    return details
+                case "description":
+                    for file in self.presets_path.iterdir():
+                            content = self.load_config(file.name)
+                            details.append((content["preset"]["description"]))
+                    return details
+                case "default":
+                    for file in self.presets_path.iterdir():
+                        content = self.load_config(file.name)
 
-                    if content["preset"]["is_default"]:
-                        details.append(content["preset"]["name"])
-                return details
+                        if content["preset"]["is_default"]:
+                            details.append(content["preset"]["name"])
+                    return details
 
 
     def save_config(self, file: Path) -> None:
@@ -83,7 +88,7 @@ class ConfigHandler:
             elif target_path.suffix == ".toml":
                 pass
             else:
-                print("Incorrect file type.")
+                raise InvalidFileTypeError(f"Cannot save {target_path}: invalid file type. Only TOML files are allowed")
     
             file.copy(target_path)
 
@@ -95,7 +100,8 @@ class ConfigHandler:
         elif path.suffix == ".toml":
             pass
         else:
-            print("Incorrect file type.")
+            raise InvalidFileTypeError(f"Cannot load {path}: invalid file type. Only TOML files are allowed.")
+
 
         with open(path, 'rb') as f:
             return tomllib.load(f)
@@ -109,14 +115,15 @@ class ConfigHandler:
             elif target_path.suffix == ".toml":
                 pass
             else:
-                print("Incorrect file type.")
+                raise InvalidFileTypeError(f"Cannot delete {target_path}: invalid file type. Only TOML files are allowed.")
+
 
             with open(target_path, 'rb') as f:
                 content = tomllib.load(f)
 
             if content['preset']['is_default'] and force == False:
                 raise DefaultConfigError(
-                    f"Cannot delete '{target_path}' because it is set as the default configuration. "
+                    f"Cannot delete '{target_path}' because it is set as the default configuration."
                     "Please set another preset as default first or use --force."
                 )
             else:
@@ -143,7 +150,8 @@ class ConfigHandler:
         elif target_path.suffix == ".toml":
             pass
         else:
-            print("Incorrect file type.")
+            raise InvalidFileTypeError(f"Cannot set {target_path} as default: invalid file type. Only TOML files are allowed.")
+
 
         with open(target_path, 'rb') as f:
             content = tomllib.load(f)
