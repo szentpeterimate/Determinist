@@ -38,6 +38,3 @@ These can be omitted (left default) if you're using one version over the other.
 
 2. Using `prompt`:
 <img src="/media/demo_prompt.gif"></img>
-
-## Disclaimer
-Determinist is purely a **password generator**. Read more [here](/DISCLAIMER.md)
