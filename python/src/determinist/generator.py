@@ -40,17 +40,19 @@ def generate_password(master_pass: str,
 
 @generate_app.callback(invoke_without_command=True)
 def generate_password_cli(ctx: typer.Context,
-                      master_pass: Annotated[Optional[str], typer.Option("--master", "-M")] = None,
-                      site_name: Annotated[Optional[str], typer.Option("--site", "-n")] = None,
-                      use_preset: Annotated[bool, typer.Option("--preset", "-p")] = False,
-                      version: Annotated[int, typer.Option("--version", "-v", min=1, max=2)] = 2, 
-                      pass_length: Annotated[int, typer.Option("--length", "-l", min=6, max=32)] = 8, 
-                      char_map: Annotated[str, typer.Option("--map")] = "{}", 
-                      spec_chars: Annotated[str, typer.Option("--special", "-s")] = punctuation, 
-                      spec_mode: Annotated[Literal["replace", "insert"], typer.Option("--mode", "-m")] = "insert",
-                      spec_freq: Annotated[int, typer.Option("--frequency", "-f")] = 4, 
-                      char_types: Annotated[str, typer.Option("--chars", "-c")] = "special,lowercase,uppercase,digits",
+                      master_pass: Annotated[Optional[str], typer.Option("--master", "-M", help="The master passphrase", rich_help_panel="Required")] = None,
+                      site_name: Annotated[Optional[str], typer.Option("--site", "-n", help="The name of the website or any string", rich_help_panel="Required")] = None,
+                      use_preset: Annotated[bool, typer.Option("--preset", "-p", help="Use a preset flag", rich_help_panel="General")] = False,
+                      version: Annotated[int, typer.Option("--version", "-v", min=1, max=2, help="Algorithm version to use", rich_help_panel="General")] = 2, 
+                      pass_length: Annotated[int, typer.Option("--length", "-l", min=6, max=32, help="Length of the generated password", rich_help_panel="General")] = 8, 
+                      char_map: Annotated[str, typer.Option("--map", help="The character map used for swapping characters, enter in [bold]JSON[/] format inside a [bold]string[/]", rich_help_panel="Algorithm V1")] = "{}", 
+                      spec_chars: Annotated[str, typer.Option("--special", "-s", help="Special characters used for insertion", rich_help_panel="Algorithm V1")] = punctuation, 
+                      spec_mode: Annotated[Literal["replace", "insert"], typer.Option("--mode", "-m", help="The special character mode", rich_help_panel="Algorithm V1")] = "insert",
+                      spec_freq: Annotated[int, typer.Option("--frequency", "-f", help="Frequency of inserted special characters", rich_help_panel="Algorithm V1")] = 4, 
+                      char_types: Annotated[str, typer.Option("--chars", "-c", help="Character sets to use", rich_help_panel="Algorithm V2")] = "special,lowercase,uppercase,digits",
                      ):
+    """Generate a password"""
+    
     if ctx.invoked_subcommand is None:
         if not master_pass:
             master_pass = typer.prompt("Master pass")
@@ -96,16 +98,17 @@ def generate_password_cli(ctx: typer.Context,
 
 @generate_app.command(name="prompt")
 def generate_password_prompt(
-                      master_pass: Annotated[str, typer.Option(prompt="Master pass")], 
-                      site_name: Annotated[str, typer.Option(prompt="Site name")], 
-                      version: Annotated[int, typer.Option(min=1, max=2, prompt="version (1/2)")] = 2,
-                      pass_length: Annotated[int, typer.Option(min=6, max=32, prompt="Password length (6-32)")] = 8, 
-                      char_map: Annotated[str, typer.Option(prompt="Character map (dict, v1)")] = "{}", 
-                      spec_chars: Annotated[str, typer.Option(prompt="Special characters (v1)")] = punctuation, 
-                      spec_mode: Annotated[Literal["replace", "insert"], typer.Option(prompt="Special character mode (v1)")] = "insert",
-                      spec_freq: Annotated[int, typer.Option(prompt="Special character frequency (v1)")] = 4, 
-                      char_types: Annotated[str, typer.Option(prompt="Character types (v2)")] = "special,lowercase,uppercase,digits"
+                      master_pass: Annotated[str, typer.Option(prompt="Master pass", help="The master passphrase", rich_help_panel="Required")], 
+                      site_name: Annotated[str, typer.Option(prompt="Site name", help="The name of the website or any string", rich_help_panel="Required")], 
+                      version: Annotated[int, typer.Option(min=1, max=2, prompt="Version", help="Algorithm version to use", rich_help_panel="General")] = 2,
+                      pass_length: Annotated[int, typer.Option(min=6, max=32, prompt="Password length", help="Length of the generated password", rich_help_panel="General")] = 8, 
+                      char_map: Annotated[str, typer.Option(prompt="Character map (JSON in a string)", help="The character map used for swapping characters, enter in [bold]JSON[/] format inside a [bold]string[/]", rich_help_panel="Algorithm V1")] = "{}", 
+                      spec_chars: Annotated[str, typer.Option(prompt="Special characters (no separation)", help="Special characters used for insertion, without separation", rich_help_panel="Algorithm V1")] = punctuation, 
+                      spec_mode: Annotated[Literal["replace", "insert"], typer.Option(prompt="Special character mode", help="The special character mode", rich_help_panel="Algorithm V1")] = "insert",
+                      spec_freq: Annotated[int, typer.Option(prompt="Special character frequency", help="Frequency of inserted special characters", rich_help_panel="Algorithm V1")] = 4, 
+                      char_types: Annotated[str, typer.Option(prompt="Character types (comma separated)", help="Character sets to use, separated by commas", rich_help_panel="Algorithm V2")] = "special,lowercase,uppercase,digits"
                      ):
+    """Generate a password by prompting"""
     
     char_map_dict = json.loads(char_map)
     spec_chars_list = list(spec_chars)
@@ -121,6 +124,8 @@ def generate_password_prompt(
 
 @presets_app.callback(invoke_without_command=True)
 def list_presets(ctx: typer.Context):
+    """Manage presets"""
+
     default_name = ch.get_files("default")
     default_name = default_name[0] if default_name else ""
     details = {name: {"description": desc, "path": str(path), "is_default": (name == default_name)} for name, desc, path in zip_longest(ch.get_files("name"), ch.get_files("description"), ch.get_files("path"), fillvalue=None)}
@@ -138,17 +143,26 @@ def list_presets(ctx: typer.Context):
         print(preset_table)
 
 @presets_app.command(name="save")
-def save_preset(path: Annotated[Path, typer.Argument(dir_okay=False, file_okay=True, exists=True)]):
-    ch.save_config(path)
-
-@presets_app.command(name="delete")
-def delete_preset(file_name: Annotated[str, typer.Argument()], force: Annotated[bool, typer.Option("--force")] = False):
+def save_preset(path: Annotated[Path, typer.Argument(dir_okay=False, file_okay=True, exists=True, help="Path to the preset to install")]):
+    """[bold green]Save[/] preset to config directory"""
     try:
-        ch.delete_config(file_name, force)
+        ch.save_config(path)
+        print(f"Successfully saved {path.name}")
     except Exception as e:
         print(f"Error: {e}")
+
+@presets_app.command(name="delete")
+def delete_preset(file_name: Annotated[str, typer.Argument(help="Name of the preset to delete")], force: Annotated[bool, typer.Option("--force", "-f", help="Forces deletion of default preset")] = False):
+    """[bold red]Permanently[/] deletes a preset"""
+    try:
+        ch.delete_config(file_name, force)
+        print(f"Successfully deleted {file_name}")
+    except Exception as e:
+        print(f"Error: {e}")
+
 @presets_app.command(name="default")
-def set_default_preset(filename: Annotated[str, typer.Argument()]):
+def set_default_preset(filename: Annotated[str, typer.Argument(help="Name of the preset to set as default")]):
+    """Sets a preset as [bold blue]default[/]"""
     try:
         ch.set_default(filename)
         print(f"Successfully set {filename} as default")
