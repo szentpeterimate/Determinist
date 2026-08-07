@@ -137,21 +137,20 @@ def generate_password_prompt(
 
 @presets_app.callback(invoke_without_command=True, help="Manage presets")
 def list_presets(ctx: typer.Context):
-
-    default_name = ch.get_files("default")
-    default_name = default_name[0] if default_name else ""
-    details = {name: {"description": desc, "path": str(path), "is_default": (name == default_name)} for name, desc, path in zip_longest(ch.get_files("name"), ch.get_files("description"), ch.get_files("path"), fillvalue=None)}
-
-    preset_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
-    preset_table.add_column("Preset")
-    preset_table.add_column("Description")
-    preset_table.add_column("Path")
-    preset_table.add_column("Default?")
-
-    for i, j in details.items():
-        preset_table.add_row(i, j["description"], j["path"], str(j["is_default"]))
-
     if ctx.invoked_subcommand == None:
+        default_name = ch.get_files("default")
+        default_name = default_name[0] if default_name else ""
+        details = {name: {"description": desc, "path": str(path), "is_default": (name == default_name)} for name, desc, path in zip_longest(ch.get_files("name"), ch.get_files("description"), ch.get_files("path"), fillvalue=None)}
+    
+        preset_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
+        preset_table.add_column("Preset")
+        preset_table.add_column("Description")
+        preset_table.add_column("Path")
+        preset_table.add_column("Default?")
+
+        for i, j in details.items():
+            preset_table.add_row(i, j["description"], j["path"], str(j["is_default"]))
+            
         print(preset_table)
 
 @presets_app.command(name="save", help="[bold green]Save[/] preset to config directory")

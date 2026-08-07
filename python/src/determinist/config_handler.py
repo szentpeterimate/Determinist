@@ -47,6 +47,19 @@ class ConfigHandler:
             default_config = inspect.cleandoc(default_config)
             self.config_file.write_text(default_config, encoding="utf-8")
 
+    def check_file_type(self, file: Path) -> Path:
+        if file.suffix == "":
+            file = self.presets_path / file.with_suffix(".toml")
+        elif file.suffix == ".toml":
+            pass
+        else:
+            if file.parent == self.presets_path:
+                raise InvalidFileTypeError(f"Wrong file type in presets directory: {file}. Only TOML files are allowed")
+            
+            raise InvalidFileTypeError(f"Cannot handle {file}: invalid file type. Only TOML files are allowed")
+
+        return file
+
     def get_files(self, mode: Literal["path", "name", "description", "default"]):
         """Returns various information about the presets"""
         details = []
@@ -83,41 +96,21 @@ class ConfigHandler:
 
     def save_config(self, file: Path) -> None:
             target_path = self.presets_path / file.name
-
-            if target_path.suffix == "":
-                target_path = self.presets_path / target_path.with_suffix(".toml")
-            elif target_path.suffix == ".toml":
-                pass
-            else:
-                raise InvalidFileTypeError(f"Cannot save {target_path}: invalid file type. Only TOML files are allowed")
+            target_path = self.check_file_type(target_path)
     
             file.copy(target_path)
 
     def load_config(self, file_name: str) -> dict:
         path = self.presets_path / file_name
-        
-        if path.suffix == "":
-            path = self.presets_path / path.with_suffix(".toml")
-        elif path.suffix == ".toml":
-            pass
-        else:
-            raise InvalidFileTypeError(f"Cannot load {path}: invalid file type. Only TOML files are allowed.")
-
+        path = self.check_file_type(path)
 
         with open(path, 'rb') as f:
             return tomllib.load(f)
         
     def delete_config(self, file_name: str, force: bool) -> None:
             target_path = self.presets_path / file_name
-
+            target_path = self.check_file_type(target_path)
             content = {}
-            if target_path.suffix == "":
-                target_path = self.presets_path / target_path.with_suffix(".toml")
-            elif target_path.suffix == ".toml":
-                pass
-            else:
-                raise InvalidFileTypeError(f"Cannot delete {target_path}: invalid file type. Only TOML files are allowed.")
-
 
             with open(target_path, 'rb') as f:
                 content = tomllib.load(f)
@@ -142,17 +135,11 @@ class ConfigHandler:
 
     def set_default(self, file_name: str):
         target_path = self.presets_path / file_name
+        target_path = self.check_file_type(target_path)
         current_default = self.get_default_path()
         assert current_default is not None
         
         content = {}
-        if target_path.suffix == "":
-            target_path = self.presets_path / target_path.with_suffix(".toml")
-        elif target_path.suffix == ".toml":
-            pass
-        else:
-            raise InvalidFileTypeError(f"Cannot set {target_path} as default: invalid file type. Only TOML files are allowed.")
-
 
         with open(target_path, 'rb') as f:
             content = tomllib.load(f)
