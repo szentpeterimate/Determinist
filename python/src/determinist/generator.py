@@ -1,5 +1,6 @@
 import typer
 import json
+import sys
 from typing import Literal, Annotated, Optional
 from string import punctuation
 from .algorithms import v1, v2
@@ -9,6 +10,8 @@ from rich.prompt import Prompt
 from .config_handler import ConfigHandler
 from pathlib import Path
 from itertools import zip_longest
+from ._version import __commit_id__, __version__
+from datetime import datetime
 
 app = typer.Typer()
 
@@ -26,10 +29,11 @@ def generate_password(master_pass: str,
                       spec_chars: list = list(punctuation), 
                       version: int = 2, 
                       pass_length: int = 8, 
-                      spec_mode: Literal["replace", "insert"] = "insert",
+                      spec_mode: Literal["replace", "insert"] = "insertHere is how you update your Typer callback to display both your app's version (with commit hash) and the user's Python version:",
                       spec_freq: int = 4, 
                       char_types: list = ["special","lowercase","uppercase","digits"]
                      ) -> str:
+    """Deterministically generates a password based on the inputs"""
     
     if version == 1:
         return v1.generate(master_pass=master_pass, site_name=site_name, pass_length=pass_length, spec_mode=spec_mode, spec_chars=spec_chars, char_map=char_map, spec_freq=spec_freq)
@@ -38,7 +42,18 @@ def generate_password(master_pass: str,
     else:
         raise ValueError(f"Unsupported algorithm version: {version}")
 
-@generate_app.callback(invoke_without_command=True)
+@app.command(name="version", help="Display version info")
+def version():
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+
+    version_table = Table(box=box.MINIMAL_DOUBLE_HEAD)
+    version_table.add_column(f"\nDeterminist [bold cyan]{__version__}[/]", justify="center")
+    version_table.add_row(f"Commit: [bold cyan]{__commit_id__}[/]")
+    version_table.add_row(f"Python: [bold cyan]{python_version}[/]")
+
+    print(version_table)
+
+@generate_app.callback(invoke_without_command=True, help="Generate a password")
 def generate_password_cli(ctx: typer.Context,
                       master_pass: Annotated[Optional[str], typer.Option("--master", "-M", help="The master passphrase", rich_help_panel="Required")] = None,
                       site_name: Annotated[Optional[str], typer.Option("--site", "-n", help="The name of the website or any string", rich_help_panel="Required")] = None,
@@ -51,7 +66,6 @@ def generate_password_cli(ctx: typer.Context,
                       spec_freq: Annotated[int, typer.Option("--frequency", "-f", help="Frequency of inserted special characters", rich_help_panel="Algorithm V1")] = 4, 
                       char_types: Annotated[str, typer.Option("--chars", "-c", help="Character sets to use", rich_help_panel="Algorithm V2")] = "special,lowercase,uppercase,digits",
                      ):
-    """Generate a password"""
     
     if ctx.invoked_subcommand is None:
         if not master_pass:
@@ -91,12 +105,12 @@ def generate_password_cli(ctx: typer.Context,
         password = generate_password(master_pass=master_pass, site_name=site_name, char_map=char_map_dict, char_types=char_types_list, pass_length=pass_length, version=version, spec_mode=spec_mode, spec_chars=spec_chars_list, spec_freq=spec_freq)
 
         success_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
-        success_table.add_column("Password Generation Successful!", justify="center")
+        success_table.add_column("\nPassword Generation Successful!", justify="center")
         success_table.add_row(f"Password: [bold cyan]{password}[/]")
 
         print(success_table)
 
-@generate_app.command(name="prompt")
+@generate_app.command(name="prompt", help="Generate a password by prompting")
 def generate_password_prompt(
                       master_pass: Annotated[str, typer.Option(prompt="Master pass", help="The master passphrase", rich_help_panel="Required")], 
                       site_name: Annotated[str, typer.Option(prompt="Site name", help="The name of the website or any string", rich_help_panel="Required")], 
@@ -108,7 +122,6 @@ def generate_password_prompt(
                       spec_freq: Annotated[int, typer.Option(prompt="Special character frequency", help="Frequency of inserted special characters", rich_help_panel="Algorithm V1")] = 4, 
                       char_types: Annotated[str, typer.Option(prompt="Character types (comma separated)", help="Character sets to use, separated by commas", rich_help_panel="Algorithm V2")] = "special,lowercase,uppercase,digits"
                      ):
-    """Generate a password by prompting"""
     
     char_map_dict = json.loads(char_map)
     spec_chars_list = list(spec_chars)
@@ -122,49 +135,44 @@ def generate_password_prompt(
 
     print(success_table)
 
-@presets_app.callback(invoke_without_command=True)
+@presets_app.callback(invoke_without_command=True, help="Manage presets")
 def list_presets(ctx: typer.Context):
-    """Manage presets"""
-
-    default_name = ch.get_files("default")
-    default_name = default_name[0] if default_name else ""
-    details = {name: {"description": desc, "path": str(path), "is_default": (name == default_name)} for name, desc, path in zip_longest(ch.get_files("name"), ch.get_files("description"), ch.get_files("path"), fillvalue=None)}
-
-    preset_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
-    preset_table.add_column("Preset")
-    preset_table.add_column("Description")
-    preset_table.add_column("Path")
-    preset_table.add_column("Default?")
-
-    for i, j in details.items():
-        preset_table.add_row(i, j["description"], j["path"], str(j["is_default"]))
-
     if ctx.invoked_subcommand == None:
+        default_name = ch.get_files("default")
+        default_name = default_name[0] if default_name else ""
+        details = {name: {"description": desc, "path": str(path), "is_default": (name == default_name)} for name, desc, path in zip_longest(ch.get_files("name"), ch.get_files("description"), ch.get_files("path"), fillvalue=None)}
+    
+        preset_table = Table(box=box.SIMPLE_HEAD, show_edge=False)
+        preset_table.add_column("Preset")
+        preset_table.add_column("Description")
+        preset_table.add_column("Path")
+        preset_table.add_column("Default?")
+
+        for i, j in details.items():
+            preset_table.add_row(i, j["description"], j["path"], str(j["is_default"]))
+            
         print(preset_table)
 
-@presets_app.command(name="save")
+@presets_app.command(name="save", help="[bold green]Save[/] preset to config directory")
 def save_preset(path: Annotated[Path, typer.Argument(dir_okay=False, file_okay=True, exists=True, help="Path to the preset to install")]):
-    """[bold green]Save[/] preset to config directory"""
     try:
         ch.save_config(path)
         print(f"Successfully saved {path.name}")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"[bold red]ERROR[/]: {e}")
 
-@presets_app.command(name="delete")
+@presets_app.command(name="delete", help="[bold red]Permanently[/] deletes a preset")
 def delete_preset(file_name: Annotated[str, typer.Argument(help="Name of the preset to delete")], force: Annotated[bool, typer.Option("--force", "-f", help="Forces deletion of default preset")] = False):
-    """[bold red]Permanently[/] deletes a preset"""
     try:
         ch.delete_config(file_name, force)
         print(f"Successfully deleted {file_name}")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"[bold red]ERROR[/]: {e}")
 
-@presets_app.command(name="default")
+@presets_app.command(name="default", help="Sets a preset as [bold blue]default[/]")
 def set_default_preset(filename: Annotated[str, typer.Argument(help="Name of the preset to set as default")]):
-    """Sets a preset as [bold blue]default[/]"""
     try:
         ch.set_default(filename)
         print(f"Successfully set {filename} as default")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"[bold red]ERROR[/]: {e}")

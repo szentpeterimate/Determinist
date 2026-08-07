@@ -23,7 +23,7 @@ class ConfigHandler:
         is_first_run = not self.config_path.exists()
         self.presets_path.mkdir(parents=True, exist_ok=True)
 
-        if is_first_run and not self.config_file.exists():
+        if is_first_run and not self.config_file.exists(): # Only creates default preset when first run to avoid recreating it after it's deleted
             default_config = """
             [preset]
             name = "Default"
@@ -45,9 +45,27 @@ class ConfigHandler:
             """
 
             default_config = inspect.cleandoc(default_config)
-            self.config_file.write_text(default_config, encoding="utf-8")
+
+            try:
+                self.config_file.write_text(default_config, encoding="utf-8")
+            except Exception as e:
+                print(f"[bold red]ERROR[/]: {e}")
+
+    def check_file_type(self, file: Path) -> Path:
+        if file.suffix == "":
+            file = self.presets_path / file.with_suffix(".toml")
+        elif file.suffix == ".toml":
+            pass
+        else:
+            if file.parent == self.presets_path:
+                raise InvalidFileTypeError(f"Wrong file type in presets directory: {file}. Only TOML files are allowed.")
+            
+            raise InvalidFileTypeError(f"Cannot handle {file}: invalid file type. Only TOML files are allowed.")
+
+        return file
 
     def get_files(self, mode: Literal["path", "name", "description", "default"]):
+        """Returns various information about the presets"""
         details = []
         content = {}
 
@@ -82,54 +100,42 @@ class ConfigHandler:
 
     def save_config(self, file: Path) -> None:
             target_path = self.presets_path / file.name
-
-            if target_path.suffix == "":
-                target_path = self.presets_path / target_path.with_suffix(".toml")
-            elif target_path.suffix == ".toml":
-                pass
-            else:
-                raise InvalidFileTypeError(f"Cannot save {target_path}: invalid file type. Only TOML files are allowed")
-    
-            file.copy(target_path)
+            target_path = self.check_file_type(target_path)
+            try:
+                file.copy(target_path)
+            except Exception as e:
+                print(f"[bold red]ERROR[/]: {e}")
 
     def load_config(self, file_name: str) -> dict:
         path = self.presets_path / file_name
-        
-        if path.suffix == "":
-            path = self.presets_path / path.with_suffix(".toml")
-        elif path.suffix == ".toml":
-            pass
-        else:
-            raise InvalidFileTypeError(f"Cannot load {path}: invalid file type. Only TOML files are allowed.")
+        path = self.check_file_type(path)
 
+        try:
+            with open(path, 'rb') as f:
+                return tomllib.load(f)
+        except Exception as e:
+            print(f"[bold red]ERROR[/]: {e}")
 
-        with open(path, 'rb') as f:
-            return tomllib.load(f)
-        
     def delete_config(self, file_name: str, force: bool) -> None:
             target_path = self.presets_path / file_name
-
+            target_path = self.check_file_type(target_path)
             content = {}
-            if target_path.suffix == "":
-                target_path = self.presets_path / target_path.with_suffix(".toml")
-            elif target_path.suffix == ".toml":
-                pass
-            else:
-                raise InvalidFileTypeError(f"Cannot delete {target_path}: invalid file type. Only TOML files are allowed.")
-
 
             with open(target_path, 'rb') as f:
                 content = tomllib.load(f)
 
             if content['preset']['is_default'] and force == False:
                 raise DefaultConfigError(
-                    f"Cannot delete '{target_path}' because it is set as the default configuration."
+                    f"Cannot delete '{target_path}' because it is set as the default configuration. "
                     "Please set another preset as default first or use --force."
                 )
             else:
-                target_path.unlink(missing_ok=True)
-                print(f"Preset {file_name} deleted!")
-
+                try:
+                    target_path.unlink(missing_ok=True)
+                    print(f"Preset {file_name} deleted!")
+                except Exception as e:
+                    print(f"[bold red]ERROR[/]: {e}")
+                
     def get_default_path(self) -> Path | None:
         default_name = self.get_files("default")
         default_name = default_name[0] if default_name else None
@@ -141,30 +147,27 @@ class ConfigHandler:
 
     def set_default(self, file_name: str):
         target_path = self.presets_path / file_name
+        target_path = self.check_file_type(target_path)
         current_default = self.get_default_path()
         assert current_default is not None
         
         content = {}
-        if target_path.suffix == "":
-            target_path = self.presets_path / target_path.with_suffix(".toml")
-        elif target_path.suffix == ".toml":
-            pass
-        else:
-            raise InvalidFileTypeError(f"Cannot set {target_path} as default: invalid file type. Only TOML files are allowed.")
 
+        try:
+            with open(target_path, 'rb') as f:
+                content = tomllib.load(f)
 
-        with open(target_path, 'rb') as f:
-            content = tomllib.load(f)
+            content["preset"]["is_default"] = True
 
-        content["preset"]["is_default"] = True
+            with open(target_path, 'wb') as f:
+                tomli_w.dump(content, f)
 
-        with open(target_path, 'wb') as f:
-            tomli_w.dump(content, f)
+            with open(current_default, 'rb') as f:
+                content = tomllib.load(f)
 
-        with open(current_default, 'rb') as f:
-            content = tomllib.load(f)
+            content["preset"]["is_default"] = False
 
-        content["preset"]["is_default"] = False
-
-        with open(current_default, 'wb') as f:
-            tomli_w.dump(content, f)
+            with open(current_default, 'wb') as f:
+                tomli_w.dump(content, f)
+        except Exception as e:
+            print(f"[bold red]ERROR[/]: {e}")
