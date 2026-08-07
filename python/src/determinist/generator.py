@@ -159,7 +159,7 @@ def save_preset(path: Annotated[Path, typer.Argument(dir_okay=False, file_okay=T
         ch.save_config(path)
         print(f"Successfully saved {path.name}")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"[bold red]ERROR[/]: {e}")
 
 @presets_app.command(name="delete", help="[bold red]Permanently[/] deletes a preset")
 def delete_preset(file_name: Annotated[str, typer.Argument(help="Name of the preset to delete")], force: Annotated[bool, typer.Option("--force", "-f", help="Forces deletion of default preset")] = False):
@@ -167,7 +167,7 @@ def delete_preset(file_name: Annotated[str, typer.Argument(help="Name of the pre
         ch.delete_config(file_name, force)
         print(f"Successfully deleted {file_name}")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"[bold red]ERROR[/]: {e}")
 
 @presets_app.command(name="default", help="Sets a preset as [bold blue]default[/]")
 def set_default_preset(filename: Annotated[str, typer.Argument(help="Name of the preset to set as default")]):
@@ -175,4 +175,4 @@ def set_default_preset(filename: Annotated[str, typer.Argument(help="Name of the
         ch.set_default(filename)
         print(f"Successfully set {filename} as default")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"[bold red]ERROR[/]: {e}")
