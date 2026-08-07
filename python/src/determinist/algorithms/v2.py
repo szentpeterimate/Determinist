@@ -17,7 +17,7 @@ def generate(master_pass: str, site_name: str, pass_length: int, char_map: dict[
         charset += digits
 
     charset_list = list(charset)
-    salt = master_pass + site_name + str(pass_length) + str(char_map) + charset
+    salt = master_pass + site_name + str(pass_length) + str(char_map) + charset # DO NOT REMOVE! char_map is included in the salt due to it being left in. Although unused, it would change derived passwords
 
     random = Random(salt)
     random.shuffle(charset_list)
@@ -27,10 +27,10 @@ def generate(master_pass: str, site_name: str, pass_length: int, char_map: dict[
                                 time_cost=2,
                                 memory_cost=65536,
                                 parallelism=4,
-                                hash_len=32*pass_length,
+                                hash_len=32*pass_length, # 32 * the length of the password should give more than enough bytes to pass rejection sampling
                                 type=Type.ID
                             )
-    stream = BytesIO(hashed_bytes)
+    stream = BytesIO(hashed_bytes) # Converts it into a byte stream for easier handling
     password = ""
 
     limit = 256 - (256 % len(charset_list))

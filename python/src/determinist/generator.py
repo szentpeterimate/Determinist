@@ -33,6 +33,7 @@ def generate_password(master_pass: str,
                       spec_freq: int = 4, 
                       char_types: list = ["special","lowercase","uppercase","digits"]
                      ) -> str:
+    """Deterministically generates a password based on the inputs"""
     
     if version == 1:
         return v1.generate(master_pass=master_pass, site_name=site_name, pass_length=pass_length, spec_mode=spec_mode, spec_chars=spec_chars, char_map=char_map, spec_freq=spec_freq)

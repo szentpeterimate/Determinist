@@ -5,7 +5,7 @@ def generate(master_pass: str, site_name: str, pass_length: int, spec_mode: Lite
     hashed_str = hash_secret(secret=master_pass.encode('utf-8'),
                                 salt=site_name.encode('utf-8'),
                                 time_cost=2,
-                                memory_cost=65536,
+                                memory_cost=65536, # Only uses 64kb of memory to save system resources
                                 parallelism=4,
                                 hash_len=32,
                                 type=Type.ID
