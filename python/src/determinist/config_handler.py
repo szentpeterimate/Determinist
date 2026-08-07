@@ -23,7 +23,7 @@ class ConfigHandler:
         is_first_run = not self.config_path.exists()
         self.presets_path.mkdir(parents=True, exist_ok=True)
 
-        if is_first_run and not self.config_file.exists():
+        if is_first_run and not self.config_file.exists(): # Only creates default preset when first run to avoid recreating it after it's deleted
             default_config = """
             [preset]
             name = "Default"
@@ -48,6 +48,7 @@ class ConfigHandler:
             self.config_file.write_text(default_config, encoding="utf-8")
 
     def get_files(self, mode: Literal["path", "name", "description", "default"]):
+        """Returns various information about the presets"""
         details = []
         content = {}
 
