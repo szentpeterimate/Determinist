@@ -45,7 +45,11 @@ class ConfigHandler:
             """
 
             default_config = inspect.cleandoc(default_config)
-            self.config_file.write_text(default_config, encoding="utf-8")
+
+            try:
+                self.config_file.write_text(default_config, encoding="utf-8")
+            except Exception as e:
+                print(f"[bold red]ERROR[/]: {e}")
 
     def check_file_type(self, file: Path) -> Path:
         if file.suffix == "":
@@ -54,9 +58,9 @@ class ConfigHandler:
             pass
         else:
             if file.parent == self.presets_path:
-                raise InvalidFileTypeError(f"Wrong file type in presets directory: {file}. Only TOML files are allowed")
+                raise InvalidFileTypeError(f"Wrong file type in presets directory: {file}. Only TOML files are allowed.")
             
-            raise InvalidFileTypeError(f"Cannot handle {file}: invalid file type. Only TOML files are allowed")
+            raise InvalidFileTypeError(f"Cannot handle {file}: invalid file type. Only TOML files are allowed.")
 
         return file
 
@@ -97,16 +101,21 @@ class ConfigHandler:
     def save_config(self, file: Path) -> None:
             target_path = self.presets_path / file.name
             target_path = self.check_file_type(target_path)
-    
-            file.copy(target_path)
+            try:
+                file.copy(target_path)
+            except Exception as e:
+                print(f"[bold red]ERROR[/]: {e}")
 
     def load_config(self, file_name: str) -> dict:
         path = self.presets_path / file_name
         path = self.check_file_type(path)
 
-        with open(path, 'rb') as f:
-            return tomllib.load(f)
-        
+        try:
+            with open(path, 'rb') as f:
+                return tomllib.load(f)
+        except Exception as e:
+            print(f"[bold red]ERROR[/]: {e}")
+
     def delete_config(self, file_name: str, force: bool) -> None:
             target_path = self.presets_path / file_name
             target_path = self.check_file_type(target_path)
@@ -117,13 +126,16 @@ class ConfigHandler:
 
             if content['preset']['is_default'] and force == False:
                 raise DefaultConfigError(
-                    f"Cannot delete '{target_path}' because it is set as the default configuration."
+                    f"Cannot delete '{target_path}' because it is set as the default configuration. "
                     "Please set another preset as default first or use --force."
                 )
             else:
-                target_path.unlink(missing_ok=True)
-                print(f"Preset {file_name} deleted!")
-
+                try:
+                    target_path.unlink(missing_ok=True)
+                    print(f"Preset {file_name} deleted!")
+                except Exception as e:
+                    print(f"[bold red]ERROR[/]: {e}")
+                
     def get_default_path(self) -> Path | None:
         default_name = self.get_files("default")
         default_name = default_name[0] if default_name else None
@@ -141,18 +153,21 @@ class ConfigHandler:
         
         content = {}
 
-        with open(target_path, 'rb') as f:
-            content = tomllib.load(f)
+        try:
+            with open(target_path, 'rb') as f:
+                content = tomllib.load(f)
 
-        content["preset"]["is_default"] = True
+            content["preset"]["is_default"] = True
 
-        with open(target_path, 'wb') as f:
-            tomli_w.dump(content, f)
+            with open(target_path, 'wb') as f:
+                tomli_w.dump(content, f)
 
-        with open(current_default, 'rb') as f:
-            content = tomllib.load(f)
+            with open(current_default, 'rb') as f:
+                content = tomllib.load(f)
 
-        content["preset"]["is_default"] = False
+            content["preset"]["is_default"] = False
 
-        with open(current_default, 'wb') as f:
-            tomli_w.dump(content, f)
+            with open(current_default, 'wb') as f:
+                tomli_w.dump(content, f)
+        except Exception as e:
+            print(f"[bold red]ERROR[/]: {e}")
