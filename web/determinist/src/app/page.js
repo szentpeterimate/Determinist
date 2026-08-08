@@ -1,5 +1,8 @@
+"use client"
+import Generator from "@/components/generator"
+
 export default function Home() {
   return (
-    <p>Determinist</p>
-  );
+    <Generator />
+  )
 }
