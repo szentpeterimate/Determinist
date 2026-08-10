@@ -29,7 +29,7 @@ def generate_password(master_pass: str,
                       spec_chars: list = list(punctuation), 
                       version: int = 2, 
                       pass_length: int = 8, 
-                      spec_mode: Literal["replace", "insert"] = "insertHere is how you update your Typer callback to display both your app's version (with commit hash) and the user's Python version:",
+                      spec_mode: Literal["replace", "insert"] = "insert",
                       spec_freq: int = 4, 
                       char_types: list = ["special","lowercase","uppercase","digits"]
                      ) -> str:
