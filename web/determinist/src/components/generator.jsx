@@ -7,23 +7,23 @@ import { useState } from 'react'
 import { PythonRandom } from './python-random'
 
 const encoder = new TextEncoder()
+const punctuation = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+const asciiLowercase = "abcdefghijklmnopqrstuvwxyz"
+const asciiUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const digits = "0123456789"
 
 export default function Generator() {
     const [masterpass, setMasterpass] = useState("")
     const [sitename, setSitename] = useState("")
-    const [passlength, setPassLength] = useState(0)
-    const [version, setVersion] = useState(0)
-    const [specmode, setSpecMode] = useState("")
+    const [passlength, setPassLength] = useState(8)
+    const [version, setVersion] = useState(2)
+    const [specmode, setSpecMode] = useState("insert")
     const [charmap, setCharMap] = useState({})
-    const [specchars, setSpecChars] = useState("")
-    const [specfreq, setSpecFreq] = useState(0)
+    const [specchars, setSpecChars] = useState(punctuation)
+    const [specfreq, setSpecFreq] = useState(4)
     const [charset, setCharSet] = useState(["lowercase", "uppercase", "digits", "special"])
     const [hash, setHash] = useState("")
-
-    const punctuation = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
-    const asciiLowercase = "abcdefghijklmnopqrstuvwxyz"
-    const asciiUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    const digits = "0123456789"
+    const [error, setError] = useState(false)
 
     async function v1(masterPass, siteName, passLength = 8, specMode = "insert", charMap = {}, specChars = punctuation, specFreq = 4) {
         const hashedString = await argon2.hash({
@@ -82,7 +82,7 @@ export default function Generator() {
         const rng = new PythonRandom(salt)
         
         const charSetList = rng.shuffle(charSet.split(''))
-        
+
         const hashedBytes = await argon2.hash({
             pass: encoder.encode(masterPass),
             salt: encoder.encode(salt),
@@ -107,7 +107,6 @@ export default function Generator() {
         }
         let passwordToShuffle = password.split('')
         const shuffled_pass = rng.shuffle(passwordToShuffle)
-        console.log(JSON.stringify(Array.from(shuffled_pass)))
         const final = shuffled_pass.join('')
         
         return final
@@ -115,6 +114,13 @@ export default function Generator() {
 
     async function handleGenerate(e) {
         e.preventDefault()
+
+        if (charset.length == 0) {
+            setError(true)
+            return
+        } else {
+            setError(false)
+        }
 
         let result = ""
 
@@ -127,74 +133,142 @@ export default function Generator() {
         setHash(result)
     }
 
-  return (
-    <div className='genBox'>
-        <form onSubmit={handleGenerate}>
-            <input 
-                type="text" 
-                name='masterpass' 
-                value={masterpass}
-                onChange={(e) => setMasterpass(e.target.value)}
-                placeholder="Master Password" 
-                autoComplete='off'
-            />
-            <input 
-                type="text" 
-                name='sitename' 
-                value={sitename}
-                onChange={(e) => setSitename(e.target.value)}
-                placeholder="Site Name" 
-                autoComplete='off'
-            />
-            <input 
-                type="number" 
-                name='version' 
-                value={version}
-                onChange={(e) => setVersion(e.target.value)}
-                placeholder="Algorithm Version"
-                autoComplete='off'
-            />
-            <input 
-                type="number" 
-                name='passlength' 
-                value={passlength}
-                onChange={(e) => setPassLength(e.target.value)}
-                placeholder="Password Length"
-                autoComplete='off'
-            />
-            <input 
-                type="text" 
-                name='specmode' 
-                value={specmode}
-                onChange={(e) => setSpecMode(e.target.value)}
-                placeholder="Special Character Mode"
-                autoComplete='off'
-            />
-            <div id="charmapinput">
-                <CharMapInput onChange={(dictResult) => setCharMap(dictResult)} />
+    return (
+        <>
+            <div className='card'>
+                <form onSubmit={handleGenerate} className='generator grid place-items-center'>
+                    <div className="flex flex-col gap-2">
+                        <div className='w-full h-full'>
+                            <div className="maininputs mb-2 grid grid-cols-2 grid-rows-1 gap-4 w-full">
+                                <label className='flex flex-col justify-center'>
+                                    Master Pass
+                                    <input 
+                                        className='masterpass text-base font-normal'
+                                        type="text" 
+                                        name='masterpass' 
+                                        value={masterpass}
+                                        onChange={(e) => setMasterpass(e.target.value)}
+                                        autoComplete='off'
+                                        required={true}
+                                    />
+                                </label>
+                                <label className='flex flex-col justify-center'>
+                                    Site Name
+                                    <input 
+                                        className='text text-base font-normal'
+                                        type="text" 
+                                        name='sitename' 
+                                        value={sitename}
+                                        onChange={(e) => setSitename(e.target.value)}
+                                        autoComplete='off'
+                                        required={true}
+                                    />
+                                </label>
+                            </div>
+                            <div className="grid grid-cols-2 grid-rows-1 place-items-end gap-x-4 gap-y-2 w-full">
+                                <label className='w-full'>Algorithm Version</label>
+                                <div className="w-full h-full grid place-items-center">
+                                    <select 
+                                        name="version"
+                                        value={version}
+                                        onChange={(e) => setVersion(e.target.value)}
+                                        required={true}
+                                    >
+                                        <option value={1}>1</option>
+                                        <option value={2}>2</option>
+                                    </select>
+                                </div>
+                                <label className='w-full'>Password Length</label>
+                                <div className="w-full h-full grid place-items-center">
+                                    <input 
+                                        className='text-base text-center w-11 h-full'
+                                        type="number" 
+                                        name='passlength' 
+                                        value={passlength}
+                                        onChange={(e) => setPassLength(e.target.value)}
+                                        min={6}
+                                        max={32}
+                                        autoComplete='off'
+                                        required={true}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="options h-min w-full">
+                            {version == 1 ? 
+                                <div className="v1only">
+                                    <div className="grid grid-cols-2 grid-rows-1 place-items-end gap-x-4 gap-y-2 w-full h-full">
+                                        <label className='w-full'>Special Character Mode</label>
+                                        <div className="grid place-items-center w-full h-full">
+                                            <select 
+                                                className='w-fit h-full'
+                                                value={specmode}
+                                                name="specmode" 
+                                                onChange={(e) => setSpecMode(e.target.value)} 
+                                                required={true} 
+                                            >
+                                                <option value="insert">Insert</option>
+                                                <option value="replace">Replace</option>
+                                            </select>
+                                        </div>
+                                        {specmode == "replace" ? 
+                                            <div className="flex flex-col col-span-2 w-full">
+                                                <label className='w-full h-full'>Special Character Mapping</label>
+                                                <div id="charmapinput">
+                                                    <CharMapInput onChange={(dictResult) => setCharMap(dictResult)} />
+                                                </div>
+                                            </div> 
+                                        :
+                                            <div className="grid grid-cols-2 grid-rows-2 col-span-2 gap-2">
+                                                <div className="grid grid-cols-2 grid-rows-1 gap-4 col-span-2 w-full">
+                                                    <label className='w-full'>Special Characters</label>
+                                                    <div className="grid place-items-center w-full h-full">
+                                                        <input 
+                                                            className='w-full'
+                                                            type="text" 
+                                                            name='specchars' 
+                                                            value={specchars}
+                                                            onChange={(e) => setSpecChars(e.target.value)}
+                                                            placeholder="Special Characters"
+                                                            autoComplete='off'
+                                                            required={true}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="col-span-2 grid grid-cols-2 grid-rows-1 gap-4 place-items-end">
+                                                    <label className='w-full'>Special Character Frequency</label>
+                                                    <div className="grid place-items-center w-full h-full">
+                                                        <input 
+                                                            className='w-11 h-full text-center'
+                                                            type="number" 
+                                                            name='specfreq' 
+                                                            value={specfreq}
+                                                            onChange={(e) => setSpecFreq(e.target.value)}
+                                                            autoComplete='off'
+                                                            required={true}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div> 
+                            : version == 2 ?
+                                <CharSetInput onChange={(sets) => {setCharSet(sets)} } />
+                            :
+                                null
+                            }
+                            { error ? <p className='text-red-500 mt-4'>At least one type of character must be selected</p> : null}
+                        </div>
+                        <div className="w-full h-full grid place-items-center">
+                            <button className='btn text-center' type='submit'>Generate</button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div id="charmapinput">
-                <CharSetInput onChange={(sets) => setCharSet(sets)} />
+            <div className={`card-success ${hash ? 'show' : ''}`}>
+                <p className='result font-bold'>{hash}</p>
             </div>
-            <input 
-                type="text" 
-                name='specchars' 
-                value={specchars}
-                onChange={(e) => setSpecChars(e.target.value)}
-                placeholder="Special Characters"
-                autoComplete='off'
-            />
-            <input 
-                type="number" 
-                name='specfreq' 
-                value={specfreq}
-                onChange={(e) => setSpecFreq(e.target.value)}
-                placeholder="Special Character Frequency"
-                autoComplete='off'
-            />
-            <button type='submit'>Generate</button>
-        </form>
-        <p id='result'>{hash}</p>
-    </div>
-  );
+        </>
+    );
 }
