@@ -42,6 +42,3 @@ These can be omitted (left default) if you're using one version over the other.
 - `--special` / `-s`: The special characters used. Write in string form, without separation
 #### V2
 - `--chars` / `-c`: The character set used in v2. Separate them by commas **without spaces**
-
-## Disclaimer
-Determinist is purely a **password generator**. Read more [here](/DISCLAIMER.md)

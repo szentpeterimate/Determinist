@@ -9,5 +9,5 @@
 
 ## Your responsibilities
 - You have to remember your master passphrase
-- You have to remember the inputs (presets coming soon!)
+- You have to remember the inputs
 - You have to keep the master passphrase a secret
