@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+@theme {
+    --font-display: "Schibsted Grotesk";
+    --font-logo: "Slabo 13px";
+
+    --color-background: #161721;
+    --color-complimentary: #4EA699;
+    --color-accent: #9F8DD5;
+}
+
+body {
+    background-color: var(--color-background);
+    font-family: var(--font-display);
+    padding: 16px;
+    color: #F0F0F0;
+}
+
+.diff {
+    all: unset;
+}
+
+h1 {
+    font-size: 36px;
+    letter-spacing: -1px;
+    font-weight: bold;
+    line-height: 48px;
+}
+
+h2 {
+    font-size: 24px;
+}
+
+p {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+label {
+    font-size: 1.125rem;
+    font-weight: bold;
+}
+
+.card  {
+    border-radius: 1rem;
+    border: #1d1e2c 1px solid;
+    box-shadow: rgb(0 0 0 / 0.5) 0 0.5rem 1rem 0.1rem;
+    padding: 0.5rem 1rem;
+}
+
+.card-success  {
+    background-color: #01d046;
+    border-radius: 1rem;
+    border: #00ff11 0.5px solid;
+    box-shadow: rgb(0 0 0 / 0.5) 0 0.5rem 1rem 0.1rem;
+    padding: 0.5rem 1rem;
+    opacity: 0%;
+    pointer-events: none;
+    transform: translateY(10rem);
+
+    transition: ease 300ms;
+    -webkit-transition: ease 300ms;
+}
+
+.card-success.show {
+    opacity: 100%;
+    pointer-events: auto;
+    transform: translateY(0);
+    background-color: #161721;
+
+    transition: ease 300ms;
+    -webkit-transition: ease 300ms;
+}
+
+input, .btn {
+    border-radius: 0.5rem;
+}
+
+input:not([type="checkbox"]) {
+    background-color: #1d1e2c;
+    border: #262739 1px solid;
+    outline: transparent 2px solid;
+
+    transition: ease 200ms;
+    -webkit-transition: ease 200ms;
+}
+
+input:not([type="checkbox"]):hover {
+    background-color: #1d1e2cc4;
+
+    transition: ease 200ms;
+    -webkit-transition: ease 200ms;
+}
+
+input:not([type="checkbox"]):focus {
+    outline: #2d2e44 2px solid;
+
+    transition: ease 200ms;
+    -webkit-transition: ease 200ms;
+}
+
+input[type="number"] {
+    appearance: textfield;
+}
+
+.btn {
+    width: fit-content;
+    height: fit-content;
+    padding: 0.5rem 1rem 0.5rem 1rem;
+    font-weight: bold;
+    background-color: #4EA699;
+
+    transition: ease 200ms;
+    -webkit-transition: ease 200ms;
+}
+
+.btn:hover {
+    background-color: #489a8e;
+    box-shadow: #4ea6997a 0 0 0.5rem 0.25rem;
+    transform: scale(101%);
+    transform: translateY(-1px);
+
+    transition: ease 200ms;
+    -webkit-transition: ease 200ms;
+}
+
+.btn:active {
+    background-color: #3f877d;
+
+    transition: ease 200ms;
+    -webkit-transition: ease 200ms;
+}
+
+.btn-remove {
+    padding: unset;
+    background-color: #ff4747;
+    border-radius: 0.5rem;
+}
+
+.btn-remove:hover {
+    background-color: #dc3c3c;
+    box-shadow: #ff4747 0 0 0.25rem 0.125rem;
+}
+
+.btn-remove:active {
+    background-color: #c13434;
+}
+
+.btn-add {
+    padding: 0.25rem 0.125rem;
+    background-color: #1d1e2c;
+    border-radius: 0.5rem;
+}
+
+.btn-add:hover {
+    background-color: #1d1e2cc4;
+
+    box-shadow: rgb(0 0 0 / 0.1) 0 0 0.25rem 0.125rem;
+}
+
+.btn-add:active {
+    background-color: #191a27;
+}
