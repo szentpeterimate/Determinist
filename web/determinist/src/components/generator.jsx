@@ -5,6 +5,9 @@ import CharMapInput from './charmapinput';
 import CharSetInput from './charsetinput';
 import { useState } from 'react'
 import { PythonRandom } from './python-random'
+import PresetHandler from './presethandler';
+
+const toml = require("toml")
 
 const encoder = new TextEncoder()
 const punctuation = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
@@ -24,6 +27,25 @@ export default function Generator() {
     const [charset, setCharSet] = useState(["lowercase", "uppercase", "digits", "special"])
     const [hash, setHash] = useState("")
     const [error, setError] = useState(false)
+
+    function handlePresets(presetText) {
+
+        const presetData = toml.parse(presetText)
+
+        console.log(presetData)
+
+        setVersion(presetData.general.version)
+        setPassLength(presetData.general.pass_length)
+
+        if (presetData.general.version == 1) {
+            setSpecChars(presetData.v1.spec_chars)
+            setSpecFreq(presetData.v1.spec_freq)
+            setSpecMode(presetData.v1.spec_mode)
+            setCharMap(presetData.v1.char_map)
+        } else if (presetData.general.version == 2) {
+            setCharSet(presetData.v2.char_types)
+        }
+    }
 
     async function v1(masterPass, siteName, passLength = 8, specMode = "insert", charMap = {}, specChars = punctuation, specFreq = 4) {
         const hashedString = await argon2.hash({
@@ -215,7 +237,7 @@ export default function Generator() {
                                             <div className="flex flex-col col-span-2 w-full">
                                                 <label className='w-full h-full'>Special Character Mapping</label>
                                                 <div id="charmapinput">
-                                                    <CharMapInput onChange={(dictResult) => setCharMap(dictResult)} />
+                                                    <CharMapInput charMap={charmap} onChange={(dictResult) => setCharMap(dictResult)} />
                                                 </div>
                                             </div> 
                                         :
@@ -254,7 +276,7 @@ export default function Generator() {
                                     </div>
                                 </div> 
                             : version == 2 ?
-                                <CharSetInput onChange={(sets) => {setCharSet(sets)} } />
+                                <CharSetInput charSet={charset} onChange={(sets) => {setCharSet(sets)} } />
                             :
                                 null
                             }
@@ -266,6 +288,7 @@ export default function Generator() {
                     </div>
                 </form>
             </div>
+            <PresetHandler onChange={(presetText) => handlePresets(presetText)}/>
             <div className={`card-success ${hash ? 'show' : ''}`}>
                 <p className='result font-bold'>{hash}</p>
             </div>
