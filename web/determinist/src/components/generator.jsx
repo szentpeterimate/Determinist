@@ -28,11 +28,7 @@ export default function Generator() {
     const [hash, setHash] = useState("")
     const [error, setError] = useState(false)
 
-    function handlePresets(presetText) {
-
-        const presetData = toml.parse(presetText)
-
-        console.log(presetData)
+    function handlePresets(presetData) {
 
         setVersion(presetData.general.version)
         setPassLength(presetData.general.pass_length)
