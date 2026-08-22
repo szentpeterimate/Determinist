@@ -6,15 +6,19 @@ const toml = require("toml")
 
 export default function PresetHandler({ onChange }) {
     const [presetList, setPresetList] = useState(() => {
-        const items = {...localStorage}
+        if (typeof window !== 'undefined') {
+            const items = {...localStorage}
 
-        let parsed = {}
-        for (let [key, obj] of Object.entries(items)) {
-            parsed[key] = JSON.parse(obj)
+            let parsed = {}
+            for (let [key, obj] of Object.entries(items)) {
+                parsed[key] = JSON.parse(obj)
+            }
+
+            return parsed
         }
 
-        return parsed
-        })
+        return {}  
+    })
     const [preset, setPreset] = useState(() => {
         return presetList.length === 0 ? "" : "add"
     })
