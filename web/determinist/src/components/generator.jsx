@@ -7,8 +7,6 @@ import { useState } from 'react'
 import { PythonRandom } from './python-random'
 import PresetHandler from './presethandler';
 
-const toml = require("toml")
-
 const encoder = new TextEncoder()
 const punctuation = "!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
 const asciiLowercase = "abcdefghijklmnopqrstuvwxyz"
