@@ -1,20 +1,26 @@
-import React, { useState, useEffect, useId } from 'react'
+import React, { useState, useEffect, useId, useRef } from 'react'
 import { IoIosClose } from "react-icons/io";
 
-export default function CharMapInput({ initialData = {}, onChange }) {
+export default function CharMapInput({ charMap = {}, onChange }) {
     const baseId = useId()
     const [isMounted, setIsMounted] = useState(false)
+    const onChangeRef = useRef(onChange)
+    const lastSyncedRef = useRef(JSON.stringify(charMap))
+
+    useEffect(() => {
+        onChangeRef.current = onChange
+    })
 
     const [pairs, setPairs] = useState(() => {
-        const keys = Object.keys(initialData)
+        const keys = Object.keys(charMap)
         if (keys.length === 0) {
             return [{ id: `${baseId}-0`, key: '', value: '' }]
         }
 
         return keys.map((key, id) => ({
             id: `${baseId}-${id}`,
-            key: key,
-            value: initialData[key]
+            key,
+            value: charMap[key]
         }))
     })
 
@@ -22,6 +28,7 @@ export default function CharMapInput({ initialData = {}, onChange }) {
         setIsMounted(true)
     }, [])
 
+    // pairs -> onChange
     useEffect(() => {
         if (!isMounted) return
 
@@ -31,14 +38,39 @@ export default function CharMapInput({ initialData = {}, onChange }) {
             if (trimmedKey) {
                 acc[trimmedKey] = pair.value
             }
-            
+
             return acc
         }, {})
 
-        if (onChange) {
-            onChange(dict)
+        const serialized = JSON.stringify(dict)
+        if (serialized === lastSyncedRef.current) return
+
+        lastSyncedRef.current = serialized
+        onChangeRef.current?.(dict)
+    }, [pairs, isMounted])
+
+    useEffect(() => {
+        const serialized = JSON.stringify(charMap)
+        if (serialized === lastSyncedRef.current) return
+
+        lastSyncedRef.current = serialized
+
+        const keys = Object.keys(charMap)
+        
+        if (keys.length === 0) {
+            setPairs([{ id: `${baseId}-0`, key: '', value: '' }])
+
+            return
         }
-    }, [pairs, onChange, isMounted])
+
+        setPairs(
+            keys.map((key, id) => ({
+                id: `${baseId}-${id}`,
+                key,
+                value: charMap[key]
+            }))
+        )
+    }, [charMap, baseId])
 
     const handleChange = (id, field, value) => {
         setPairs(prev => prev.map(p => (p.id === id ? { ...p, [field]: value } : p)))

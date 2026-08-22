@@ -1,9 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
-export default function CharSetInput({ onChange }) {
-    const [selectedSets, setSelectedSets] = useState(["lowercase", "uppercase", "digits", "special"])
+export default function CharSetInput({ charSet, onChange }) {
+    const [selectedSets, setSelectedSets] = useState(charSet)
+
+    useEffect(() => {
+        setSelectedSets(charSet)
+    })
 
     const handleChange = (e) => {        
         const { value, checked } = e.target
